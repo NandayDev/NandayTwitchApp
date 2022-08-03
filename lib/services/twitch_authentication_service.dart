@@ -1,24 +1,22 @@
 import 'package:flutter/services.dart';
-import 'package:nanday_twitch_app/constants.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:twitch_api/twitch_api.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-abstract class TwitchService {
+abstract class TwitchAuthenticationService {
   ///
   /// Authenticates with the Twitch backend and returns a result
   ///
-  Future<TwitchAuthenticationResult> authenticate(String clientId);
+  Future<TwitchAuthenticationResult> authenticate(String clientId, int redirectPort);
 }
 
-class TwitchServiceImpl implements TwitchService {
-
+class TwitchAuthenticationServiceImpl implements TwitchAuthenticationService {
   @override
-  Future<TwitchAuthenticationResult> authenticate(String clientId) async {
+  Future<TwitchAuthenticationResult> authenticate(String clientId, int redirectPort) async {
     final _twitchClient = TwitchClient(
       clientId: clientId,
-      redirectUri: Constants.REDIRECT_URI,
+      redirectUri: "http://localhost:$redirectPort",
     );
 
     TwitchAuthenticationResult? result;
@@ -35,7 +33,7 @@ class TwitchServiceImpl implements TwitchService {
       return Response.ok(htmlPage, headers: {'Content-Type': 'text/html'});
     });
 
-    var server = await shelf_io.serve(handler, Constants.REDIRECT_HOST, Constants.REDIRECT_PORT);
+    var server = await shelf_io.serve(handler, 'localhost', redirectPort);
 
     List<TwitchApiScope> scopes = const [];
     Uri url = _twitchClient.authorizeUri(scopes);
@@ -46,6 +44,9 @@ class TwitchServiceImpl implements TwitchService {
     while (result == null && retries < 60) {
       await Future.delayed(const Duration(seconds: 2));
       retries++;
+      if (retries == 60) {
+        result = TwitchAuthenticationResult(error: "Generic error"); //TODO error handling for timeout
+      }
     }
 
     await server.close();
@@ -57,6 +58,6 @@ class TwitchServiceImpl implements TwitchService {
 class TwitchAuthenticationResult {
   TwitchAuthenticationResult({this.token, this.error});
 
-  String? token;
-  String? error;
+  final String? token;
+  final String? error;
 }

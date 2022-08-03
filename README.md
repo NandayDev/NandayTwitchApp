@@ -4,7 +4,9 @@ A desktop application to handle my Twitch channel and automate some stuff.
 
 ## Features
 
-* [ ] Authenticate with Twitch APIs
+* [ ] Authentication:
+  * [X] with Twitch APIs
+  * [ ] Twitch Chat Interface
 * [ ] Displays a list of messages from the Twitch chat and lets you select one. Then you may:
   * [ ] Read it aloud
   * [ ] Show a popup on the streaming screen with the message

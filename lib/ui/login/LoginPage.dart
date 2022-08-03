@@ -1,10 +1,10 @@
-
-
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:nanday_twitch_app/services/twitch_service.dart';
+import 'package:nanday_twitch_app/constants.dart';
+import 'package:nanday_twitch_app/services/twitch_authentication_service.dart';
+import 'package:nanday_twitch_app/services/twitch_chat_service.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -14,10 +14,10 @@ class LoginPage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<LoginPage> {
+  String _currentState = "";
 
   @override
   Widget build(BuildContext context) {
-    _testTwitchApi();
     return Scaffold(
       appBar: AppBar(
         title: const Text("Login"),
@@ -26,7 +26,12 @@ class _MyHomePageState extends State<LoginPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-
+            TextButton(
+                onPressed: () {
+                  _tryLogin();
+                },
+                child: const Text("LOGIN")),
+            Padding(padding: const EdgeInsets.only(top: 20.0), child: Text(_currentState),)
           ],
         ),
       ),
@@ -38,8 +43,15 @@ class _MyHomePageState extends State<LoginPage> {
     );
   }
 
-  void _testTwitchApi() async {
+  void _tryLogin() async {
     String file = await rootBundle.loadString('assets/keys/twitch_keys.json');
-    TwitchServiceImpl().authenticate(jsonDecode(file)['clientId'] as String);
+    TwitchAuthenticationResult result =
+        await TwitchAuthenticationServiceImpl().authenticate(jsonDecode(file)['chatBotClientId'] as String, Constants.CHAT_REDIRECT_PORT);
+    if (result.token != null) {
+      setState(() {
+        _currentState = "Got token";
+      });
+      await TwitchChatServiceImpl().connect(result.token!);
+    }
   }
 }
