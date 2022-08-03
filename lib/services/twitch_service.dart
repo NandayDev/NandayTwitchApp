@@ -24,7 +24,9 @@ class TwitchServiceImpl implements TwitchService {
       redirectUri: Constants.REDIRECT_URI,
     );
 
-    var handler = createStaticHandler('files', defaultDocument: 'index.html');
+    // var handler = createStaticHandler('files', defaultDocument: 'index.html');
+    var handler =
+    const Pipeline().addMiddleware(logRequests()).addHandler(_echoRequest);
 
     var server = await shelf_io.serve(handler, Constants.REDIRECT_HOST, Constants.REDIRECT_PORT);
 
