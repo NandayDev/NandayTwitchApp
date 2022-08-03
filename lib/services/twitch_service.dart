@@ -1,12 +1,8 @@
-import 'dart:convert';
-import 'dart:ffi';
-
+import 'package:flutter/services.dart';
 import 'package:nanday_twitch_app/constants.dart';
-import 'package:shelf_static/shelf_static.dart';
-import 'package:twitch_api/twitch_api.dart';
-import 'dart:io';
 import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart' as shelf_io;
+import 'package:twitch_api/twitch_api.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 abstract class TwitchService {
@@ -17,6 +13,7 @@ abstract class TwitchService {
 }
 
 class TwitchServiceImpl implements TwitchService {
+
   @override
   Future<TwitchAuthenticationResult> authenticate(String clientId) async {
     final _twitchClient = TwitchClient(
@@ -24,45 +21,36 @@ class TwitchServiceImpl implements TwitchService {
       redirectUri: Constants.REDIRECT_URI,
     );
 
-    // var handler = createStaticHandler('files', defaultDocument: 'index.html');
-    var handler =
-    const Pipeline().addMiddleware(logRequests()).addHandler(_echoRequest);
+    TwitchAuthenticationResult? result;
+
+    var handler = const Pipeline().addMiddleware(logRequests()).addHandler((request) async {
+      if (request.requestedUri.queryParameters.containsKey('access_token')) {
+        String accessToken = request.requestedUri.queryParameters['access_token']!;
+        result = TwitchAuthenticationResult(token: accessToken);
+        return Response.ok('You can now close this page');
+      }
+
+      String htmlPage = await rootBundle.loadString('assets/html/index_redirect_token.html');
+
+      return Response.ok(htmlPage, headers: {'Content-Type': 'text/html'});
+    });
 
     var server = await shelf_io.serve(handler, Constants.REDIRECT_HOST, Constants.REDIRECT_PORT);
 
-    // server.listen((request) {
-    //   String requestedUri = request.requestedUri.toString();
-    //   String fragment = request.requestedUri.fragment;
-    //   String a = "";
-    // });
-
-    // ServerSocket socket = await ServerSocket.bind(
-    //   Constants.REDIRECT_HOST,
-    //   Constants.REDIRECT_PORT
-    // );
-
-    // Socket socket = await Socket.connect(
-    //     Constants.REDIRECT_HOST,
-    //     Constants.REDIRECT_PORT
-    // );
-    //
-    // socket.listen((List<int> event) {
-    //   String a = utf8.decode(event);
-    //   String b = "";
-    // });
-
-    List<TwitchApiScope> scopes = const []; // TODO?
+    List<TwitchApiScope> scopes = const [];
     Uri url = _twitchClient.authorizeUri(scopes);
-    await launch(url.toString());
+    await launchUrl(url);
 
-    return TwitchAuthenticationResult();
-  }
+    int retries = 0;
 
-  Response _echoRequest(Request request) {
-    String uri = request.url.toString();
-    String requestedUri = request.requestedUri.toString();
-    String fragment = request.requestedUri.fragment;
-    return Response.ok('<html><head><title>Test!</title><body></body></html>');
+    while (result == null && retries < 60) {
+      await Future.delayed(const Duration(seconds: 2));
+      retries++;
+    }
+
+    await server.close();
+
+    return result!;
   }
 }
 
