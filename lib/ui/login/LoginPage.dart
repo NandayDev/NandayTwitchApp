@@ -31,7 +31,10 @@ class _MyHomePageState extends State<LoginPage> {
                   _tryLogin();
                 },
                 child: const Text("LOGIN")),
-            Padding(padding: const EdgeInsets.only(top: 20.0), child: Text(_currentState),)
+            Padding(
+              padding: const EdgeInsets.only(top: 20.0),
+              child: Text(_currentState),
+            )
           ],
         ),
       ),
@@ -45,8 +48,8 @@ class _MyHomePageState extends State<LoginPage> {
 
   void _tryLogin() async {
     String file = await rootBundle.loadString('assets/keys/twitch_keys.json');
-    TwitchAuthenticationResult result =
-        await TwitchAuthenticationServiceImpl().authenticate(jsonDecode(file)['chatBotClientId'] as String, Constants.CHAT_REDIRECT_PORT);
+    TwitchAuthenticationResult result = await TwitchAuthenticationServiceImpl()
+        .authenticate(jsonDecode(file)['chatBotClientId'] as String, Constants.CHAT_REDIRECT_PORT, Constants.CHAT_SCOPES);
     if (result.token != null) {
       setState(() {
         _currentState = "Got token";

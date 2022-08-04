@@ -35,7 +35,7 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
   # Twitch APIs #
-  twitch_api: ^0.6.0
+  #twitch_api: ^0.6.0
   # URL launcher #
   url_launcher: ^6.1.5
   # Server middleware #

@@ -1,23 +1,18 @@
 import 'package:flutter/services.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart' as shelf_io;
-import 'package:twitch_api/twitch_api.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 abstract class TwitchAuthenticationService {
   ///
   /// Authenticates with the Twitch backend and returns a result
   ///
-  Future<TwitchAuthenticationResult> authenticate(String clientId, int redirectPort);
+  Future<TwitchAuthenticationResult> authenticate(String clientId, int redirectPort, List<String> scopes);
 }
 
 class TwitchAuthenticationServiceImpl implements TwitchAuthenticationService {
   @override
-  Future<TwitchAuthenticationResult> authenticate(String clientId, int redirectPort) async {
-    final _twitchClient = TwitchClient(
-      clientId: clientId,
-      redirectUri: "http://localhost:$redirectPort",
-    );
+  Future<TwitchAuthenticationResult> authenticate(String clientId, int redirectPort, List<String> scopes) async {
 
     TwitchAuthenticationResult? result;
 
@@ -35,8 +30,17 @@ class TwitchAuthenticationServiceImpl implements TwitchAuthenticationService {
 
     var server = await shelf_io.serve(handler, 'localhost', redirectPort);
 
-    List<TwitchApiScope> scopes = const [];
-    Uri url = _twitchClient.authorizeUri(scopes);
+    Uri url = Uri(
+        scheme: 'https',
+        host: 'id.twitch.tv',
+        pathSegments: <String>['oauth2', 'authorize'],
+        queryParameters: {
+          'response_type': 'token',
+          'client_id': clientId,
+          'redirect_uri': 'http://localhost:$redirectPort',
+          'scope': scopes.join(' '),
+        },
+    );
     await launchUrl(url);
 
     int retries = 0;
