@@ -3,8 +3,13 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:nanday_twitch_app/constants.dart';
+import 'package:nanday_twitch_app/services/nanday_dependency_injector.dart';
 import 'package:nanday_twitch_app/services/twitch_authentication_service.dart';
 import 'package:nanday_twitch_app/services/twitch_chat_service.dart';
+import 'package:nanday_twitch_app/ui/login/LoginPageViewModel.dart';
+import 'package:nanday_twitch_app/ui/main/MainPage.dart';
+import 'package:nanday_twitch_app/ui/main/MainPageViewModel.dart';
+import 'package:provider/provider.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -14,7 +19,7 @@ class LoginPage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<LoginPage> {
-  String _currentState = "";
+  bool loading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +27,7 @@ class _MyHomePageState extends State<LoginPage> {
       appBar: AppBar(
         title: const Text("Login"),
       ),
-      body: Center(
+      body: loading ? const Center(child: CircularProgressIndicator()) : Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -31,10 +36,6 @@ class _MyHomePageState extends State<LoginPage> {
                   _tryLogin();
                 },
                 child: const Text("LOGIN")),
-            Padding(
-              padding: const EdgeInsets.only(top: 20.0),
-              child: Text(_currentState),
-            )
           ],
         ),
       ),
@@ -47,14 +48,24 @@ class _MyHomePageState extends State<LoginPage> {
   }
 
   void _tryLogin() async {
+    setState(() {
+      loading = true;
+    });
     String file = await rootBundle.loadString('assets/keys/twitch_keys.json');
-    TwitchAuthenticationResult result = await TwitchAuthenticationServiceImpl()
-        .authenticate(jsonDecode(file)['chatBotClientId'] as String, Constants.CHAT_REDIRECT_PORT, Constants.CHAT_SCOPES);
-    if (result.token != null) {
-      setState(() {
-        _currentState = "Got token";
-      });
-      await TwitchChatServiceImpl().connect(result.token!);
+    bool authenticated = await Provider.of<LoginPageViewModel>(context, listen: false)
+        .authenticate(file);
+    if (authenticated) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => ChangeNotifierProvider(
+          create: (context) => NandayDependencyInjector.instance.resolve<MainPageViewModel>(),
+          child: const MainPage(),
+        )),
+      );
     }
+    setState(() {
+      // TODO show error
+      loading = false;
+    });
   }
 }

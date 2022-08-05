@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:nanday_twitch_app/services/nanday_dependency_injector.dart';
 import 'package:nanday_twitch_app/ui/login/LoginPage.dart';
+import 'package:nanday_twitch_app/ui/login/LoginPageViewModel.dart';
+import 'package:provider/provider.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,11 +15,13 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: const LoginPage(),
-    );
+        title: 'Flutter Demo',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+        ),
+        home: ChangeNotifierProvider(
+          create: (context) => NandayDependencyInjector.instance.resolve<LoginPageViewModel>(),
+          child: const LoginPage(),
+        ));
   }
 }

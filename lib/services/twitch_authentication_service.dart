@@ -8,6 +8,11 @@ abstract class TwitchAuthenticationService {
   /// Authenticates with the Twitch backend and returns a result
   ///
   Future<TwitchAuthenticationResult> authenticate(String clientId, int redirectPort, List<String> scopes);
+
+  ///
+  /// Access token provided by the authentication method. Null if not obtained yet
+  ///
+  String? accessToken;
 }
 
 class TwitchAuthenticationServiceImpl implements TwitchAuthenticationService {
@@ -55,8 +60,15 @@ class TwitchAuthenticationServiceImpl implements TwitchAuthenticationService {
 
     await server.close();
 
+    if (result!.token != null) {
+      accessToken = result!.token;
+    }
+
     return result!;
   }
+
+  @override
+  String? accessToken;
 }
 
 class TwitchAuthenticationResult {

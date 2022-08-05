@@ -145,7 +145,7 @@ class _ParsedMessage {
         // If there's no equals, we assign the tag a value of true.
         var tag = rawTags[i];
         var pair = tag.split("=");
-        tags[pair[0]] = tag.substring(tag.indexOf("=") + 1) ?? "true";
+        tags[pair[0]] = tag.substring(tag.indexOf("=") + 1);
       }
 
       position = nextspace + 1;
