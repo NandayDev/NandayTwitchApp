@@ -6,9 +6,9 @@ import 'package:nanday_twitch_app/constants.dart';
 import 'package:nanday_twitch_app/services/nanday_dependency_injector.dart';
 import 'package:nanday_twitch_app/services/twitch_authentication_service.dart';
 import 'package:nanday_twitch_app/services/twitch_chat_service.dart';
-import 'package:nanday_twitch_app/ui/login/LoginPageViewModel.dart';
-import 'package:nanday_twitch_app/ui/main/MainPage.dart';
-import 'package:nanday_twitch_app/ui/main/MainPageViewModel.dart';
+import 'package:nanday_twitch_app/ui/login/login_page_view_model.dart';
+import 'package:nanday_twitch_app/ui/main/main_page.dart';
+import 'package:nanday_twitch_app/ui/main/main_page_view_model.dart';
 import 'package:provider/provider.dart';
 
 class LoginPage extends StatefulWidget {

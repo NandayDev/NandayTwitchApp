@@ -2,8 +2,8 @@ import 'package:flutter_simple_dependency_injection/injector.dart';
 import 'package:nanday_twitch_app/services/twitch_authentication_service.dart';
 import 'package:nanday_twitch_app/services/twitch_chat_service.dart';
 import 'package:nanday_twitch_app/services/twitch_keys_reader.dart';
-import 'package:nanday_twitch_app/ui/login/LoginPageViewModel.dart';
-import 'package:nanday_twitch_app/ui/main/MainPageViewModel.dart';
+import 'package:nanday_twitch_app/ui/login/login_page_view_model.dart';
+import 'package:nanday_twitch_app/ui/main/main_page_view_model.dart';
 
 class NandayDependencyInjector {
   ///

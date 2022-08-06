@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nanday_twitch_app/services/nanday_dependency_injector.dart';
-import 'package:nanday_twitch_app/ui/login/LoginPage.dart';
-import 'package:nanday_twitch_app/ui/login/LoginPageViewModel.dart';
+import 'package:nanday_twitch_app/ui/login/login_page.dart';
+import 'package:nanday_twitch_app/ui/login/login_page_view_model.dart';
 import 'package:provider/provider.dart';
 
 void main() {

@@ -25,6 +25,10 @@ class TwitchAuthenticationServiceImpl implements TwitchAuthenticationService {
   @override
   Future<TwitchAuthenticationResult> authenticate(int redirectPort, List<String> scopes) async {
 
+    if (accessToken != null) {
+      return TwitchAuthenticationResult(token: accessToken);
+    }
+
     TwitchAuthenticationResult? result;
 
     var handler = const Pipeline().addMiddleware(logRequests()).addHandler((request) async {
