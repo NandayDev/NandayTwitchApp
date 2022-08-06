@@ -20,8 +20,7 @@ Simply power up Android Studio after installing Flutter with this project.
 Add a `twitch_keys.json` file to your **assets/keys** folder, with the following syntax:
 
     {
-        "apiClientId" : "your Twitch API client id",
-        "chatBotClientId" : "your Twitch API chat bot client id"
+        "applicationClientId" : "your Twitch API chat bot app client id",
+        "botUsername" : "your bot username as registered in Twitch",
+        "channelName" : "name of the channel your bot should join (your username should work)"
     }
-
-At least for the moment, we're only using this second property, since we're not using the normal Twitch APIs, but only the chat bot capabilities.

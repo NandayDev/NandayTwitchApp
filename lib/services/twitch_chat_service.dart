@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:nanday_twitch_app/services/twitch_keys_reader.dart';
 import 'package:web_socket_channel/io.dart';
 
 abstract class TwitchChatService {
@@ -18,6 +19,11 @@ class TwitchChatMessage {
 }
 
 class TwitchChatServiceImpl implements TwitchChatService {
+
+  TwitchChatServiceImpl(this._keysReader);
+
+  final TwitchKeysReader _keysReader;
+
   bool? _connectedSuccessfully;
   IOWebSocketChannel? channel;
   final StreamController<TwitchChatMessage> _streamController = StreamController();
@@ -30,6 +36,7 @@ class TwitchChatServiceImpl implements TwitchChatService {
     }
 
     final webSocket = await WebSocket.connect('ws://irc-ws.chat.twitch.tv:80');
+    TwitchKeys twitchKeys = await _keysReader.getTwitchKeys();
 
     channel = IOWebSocketChannel(webSocket);
 
@@ -37,7 +44,7 @@ class TwitchChatServiceImpl implements TwitchChatService {
 
     channel!.sink.add('CAP REQ :twitch.tv/membership twitch.tv/tags twitch.tv/commands');
     channel!.sink.add('PASS oauth:$accessToken');
-    channel!.sink.add('NICK nandaydev');
+    channel!.sink.add('NICK ${twitchKeys.botUsername}');
 
     int retries = 0;
 
@@ -47,7 +54,7 @@ class TwitchChatServiceImpl implements TwitchChatService {
     }
 
     if (_connectedSuccessfully == true) {
-      channel!.sink.add('JOIN #nandaydev');
+      channel!.sink.add('JOIN #${twitchKeys.channelName}');
     }
 
     return _connectedSuccessfully == null ? false : _connectedSuccessfully!;

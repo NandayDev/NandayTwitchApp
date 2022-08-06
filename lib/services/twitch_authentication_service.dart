@@ -1,4 +1,5 @@
 import 'package:flutter/services.dart';
+import 'package:nanday_twitch_app/services/twitch_keys_reader.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:url_launcher/url_launcher.dart';
@@ -7,7 +8,7 @@ abstract class TwitchAuthenticationService {
   ///
   /// Authenticates with the Twitch backend and returns a result
   ///
-  Future<TwitchAuthenticationResult> authenticate(String clientId, int redirectPort, List<String> scopes);
+  Future<TwitchAuthenticationResult> authenticate(int redirectPort, List<String> scopes);
 
   ///
   /// Access token provided by the authentication method. Null if not obtained yet
@@ -16,8 +17,13 @@ abstract class TwitchAuthenticationService {
 }
 
 class TwitchAuthenticationServiceImpl implements TwitchAuthenticationService {
+
+  TwitchAuthenticationServiceImpl(this._twitchKeysReader);
+
+  final TwitchKeysReader _twitchKeysReader;
+
   @override
-  Future<TwitchAuthenticationResult> authenticate(String clientId, int redirectPort, List<String> scopes) async {
+  Future<TwitchAuthenticationResult> authenticate(int redirectPort, List<String> scopes) async {
 
     TwitchAuthenticationResult? result;
 
@@ -34,6 +40,8 @@ class TwitchAuthenticationServiceImpl implements TwitchAuthenticationService {
     });
 
     var server = await shelf_io.serve(handler, 'localhost', redirectPort);
+    TwitchKeys keys = await _twitchKeysReader.getTwitchKeys();
+    String clientId = keys.applicationClientId;
 
     Uri url = Uri(
         scheme: 'https',

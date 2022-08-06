@@ -13,6 +13,7 @@ class MainPageViewModel extends NandayViewModel {
   final TwitchAuthenticationService _authenticationService;
 
   Future initialize() async {
+
     await _twitchChatService.connect(_authenticationService.accessToken!);
     isLoading = false;
     notifyListeners();

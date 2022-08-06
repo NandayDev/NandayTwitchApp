@@ -14,9 +14,8 @@ class LoginPageViewModel extends NandayViewModel {
   ///
   /// Authenticates with Twitch backend to get an auth token
   ///
-  Future<bool> authenticate(String twitchKeysJsonFileContent) async {
-    String clientId = jsonDecode(twitchKeysJsonFileContent)['chatBotClientId'] as String;
-    TwitchAuthenticationResult result = await _authenticationService.authenticate(clientId, Constants.CHAT_REDIRECT_PORT, Constants.CHAT_SCOPES);
+  Future<bool> authenticate() async {
+    TwitchAuthenticationResult result = await _authenticationService.authenticate(Constants.CHAT_REDIRECT_PORT, Constants.CHAT_SCOPES);
     return result.token != null;
   }
 }

@@ -51,9 +51,7 @@ class _MyHomePageState extends State<LoginPage> {
     setState(() {
       loading = true;
     });
-    String file = await rootBundle.loadString('assets/keys/twitch_keys.json');
-    bool authenticated = await Provider.of<LoginPageViewModel>(context, listen: false)
-        .authenticate(file);
+    bool authenticated = await Provider.of<LoginPageViewModel>(context, listen: false).authenticate();
     if (authenticated) {
       Navigator.push(
         context,
