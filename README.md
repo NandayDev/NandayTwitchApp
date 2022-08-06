@@ -8,8 +8,9 @@ A desktop application to handle my Twitch channel and automate some stuff.
   * [X] with Twitch APIs
   * [X] with Twitch Chat Interface
 * [ ] Displays a list of messages from the Twitch chat and lets you select one. Then you may:
+  * [X] Read it aloud
+    * [ ] Bot's language should be selectable
   * [ ] Show a popup on the streaming screen with the message
-  * [ ] Read it aloud
 * [ ] Sends periodic messages to the chat with some predefined messages (such as "Subscribe!" or similar)
 * [ ] Thanks new followers, new subscribers
 * [ ] Says "Hi!" to new people joining the chat

@@ -1,3 +1,4 @@
+import 'package:nanday_twitch_app/services/text_to_speech_service.dart';
 import 'package:nanday_twitch_app/services/twitch_authentication_service.dart';
 import 'package:nanday_twitch_app/ui/base/nanday_view_model.dart';
 

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:nanday_twitch_app/services/nanday_dependency_injector.dart';
+import 'package:nanday_twitch_app/ui/main/chat_message_view_model.dart';
 import 'package:nanday_twitch_app/ui/main/chat_message_widget.dart';
 import 'package:nanday_twitch_app/ui/main/main_page_view_model.dart';
 import 'package:provider/provider.dart';
@@ -33,7 +35,11 @@ class _MainPageState extends State<MainPage> {
               itemCount: chatMessages.length,
               itemBuilder: (BuildContext context, int index) {
                 var chatMessage = chatMessages[index];
-                return ChatMessageWidget(chatMessage);
+                return ChangeNotifierProvider(
+                  create: (context) => NandayDependencyInjector.instance
+                      .resolve<ChatMessageViewModel>(additionalParameters: {ChatMessageViewModel.chatMessageParamName: chatMessage}),
+                  child: ChatMessageWidget(chatMessage),
+                );
               }),
       // floatingActionButton: FloatingActionButton(
       //   onPressed: _incrementCounter,
