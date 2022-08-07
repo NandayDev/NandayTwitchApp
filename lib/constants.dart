@@ -9,6 +9,7 @@ class Constants {
 
   // Preferences service keys //
   static const String PSKEY_CHOSEN_LANGUAGE = "chosen_language";
+  static const String PSKEY_BROADCAST_MESSAGES = "broadcast_messages";
 
   // static const String API_REDIRECT_URI = "http://$REDIRECT_HOST:$API_REDIRECT_PORT";
   // static const String CHAT_REDIRECT_URI = "http://$REDIRECT_HOST:$CHAT_REDIRECT_PORT";
