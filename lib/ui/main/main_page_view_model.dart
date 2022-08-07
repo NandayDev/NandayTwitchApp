@@ -69,6 +69,7 @@ class MainPageViewModel extends NandayViewModel {
         } else {
           languageToUse = languages[0];
         }
+        await _textToSpeechService.changeLanguage(languageToUse);
         await _preferencesService.setString(Constants.PSKEY_CHOSEN_LANGUAGE, languageToUse);
 
         chosenLanguage = languageToUse;

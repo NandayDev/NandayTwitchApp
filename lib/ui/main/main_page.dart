@@ -73,7 +73,7 @@ class _MainPageState extends State<MainPage> {
                         }).toList(),
                       ),
                 Expanded(
-                  child: ListView.builder(
+                  child: chatMessages.isEmpty ? const Center(child: Text("No messages yet!", style: TextStyle(fontSize: 20.0),)) : ListView.builder(
                       padding: const EdgeInsets.all(8),
                       itemCount: chatMessages.length,
                       itemBuilder: (BuildContext context, int index) {
