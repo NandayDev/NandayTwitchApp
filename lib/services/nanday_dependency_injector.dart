@@ -1,4 +1,5 @@
 import 'package:flutter_simple_dependency_injection/injector.dart';
+import 'package:nanday_twitch_app/services/preferences_service.dart';
 import 'package:nanday_twitch_app/services/text_to_speech_service.dart';
 import 'package:nanday_twitch_app/services/twitch_authentication_service.dart';
 import 'package:nanday_twitch_app/services/twitch_chat_service.dart';
@@ -30,7 +31,8 @@ class NandayDependencyInjector {
         .map<TwitchChatService>((injector) => TwitchChatServiceImpl(injector.get()), isSingleton: true)
         .map<LoginPageViewModel>((injector) => LoginPageViewModel(injector.get()))
         .map<TextToSpeechService>((injector) => TextToSpeechService(), isSingleton: true)
-        .map((injector) => MainPageViewModel(injector.get(), injector.get()))
+        .map<PreferencesService>((injector) => PreferencesServiceImpl(), isSingleton: true)
+        .map((injector) => MainPageViewModel(injector.get(), injector.get(), injector.get(), injector.get()))
         .mapWithParams((injector, additionalParameters) => ChatMessageViewModel(injector.get(), additionalParameters[ChatMessageViewModel.chatMessageParamName]));
   }
 }

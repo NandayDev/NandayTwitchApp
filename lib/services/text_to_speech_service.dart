@@ -5,7 +5,19 @@ class TextToSpeechService {
 
   Future speak(String text) async {
     await textToSpeech.awaitSpeakCompletion(true);
-    var a = await textToSpeech.getLanguages;
+    await textToSpeech.getLanguages;
     return textToSpeech.speak(text);
+  }
+
+  Future<List<String>> getAvailableLanguagesInOS() async {
+    List<String> languages = [];
+    for (dynamic language in await textToSpeech.getLanguages) {
+      languages.add(language);
+    }
+    return languages;
+  }
+
+  Future changeLanguage(String language) {
+    return textToSpeech.setLanguage(language);
   }
 }
