@@ -26,24 +26,27 @@ class _BroadcastMessagesDialogState extends State<BroadcastMessagesDialog> {
       content: viewModel.isLoading
           ? const Center(child: CircularProgressIndicator())
           : Column(children: [
-              ListView.builder(
-                  padding: const EdgeInsets.all(8),
-                  itemCount: messages.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    var message = messages[index];
-                    var textController = TextEditingController(text: message);
-                    textController.addListener(() {
-                      viewModel.messageEditedAtIndex(index, textController.text);
-                    });
-                    return Row(children: [
-                      Expanded(child: TextField(controller: textController)),
-                      IconButton(
-                          onPressed: () {
-                            viewModel.messageDeletedAtIndex(index);
-                          },
-                          icon: const Icon(Icons.delete))
-                    ]);
-                  }),
+              SizedBox(
+                  width: 400.0,
+                  height: 400.0,
+                  child: ListView.builder(
+                      padding: const EdgeInsets.all(8),
+                      itemCount: messages.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        var message = messages[index];
+                        var textController = TextEditingController(text: message);
+                        textController.addListener(() {
+                          viewModel.messageEditedAtIndex(index, textController.text);
+                        });
+                        return Row(children: [
+                          Expanded(child: TextField(controller: textController)),
+                          IconButton(
+                              onPressed: () {
+                                viewModel.messageDeletedAtIndex(index);
+                              },
+                              icon: const Icon(Icons.delete))
+                        ]);
+                      })),
               Align(
                   alignment: Alignment.centerRight,
                   child: IconButton(

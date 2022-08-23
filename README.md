@@ -14,7 +14,7 @@ Currently running on Windows only. Planning to add MacOS, and maybe Linux, later
 * [X] Displays a list of messages from the Twitch chat and lets you select one. Then you may:
   * [X] Read it aloud
     * [X] Bot's language should be selectable
-* [ ] Sends periodic messages to the chat with some predefined messages (such as "Subscribe!" or similar)
+* [X] Sends periodic messages to the chat with some predefined messages (such as "Subscribe!" or similar)
 * [ ] Thanks new followers, new subscribers
 * [ ] Says "Hi!" to new people joining the chat
 

@@ -1,4 +1,5 @@
 import 'package:flutter_simple_dependency_injection/injector.dart';
+import 'package:nanday_twitch_app/services/broadcast_messages_service.dart';
 import 'package:nanday_twitch_app/services/preferences_service.dart';
 import 'package:nanday_twitch_app/services/text_to_speech_service.dart';
 import 'package:nanday_twitch_app/services/twitch_authentication_service.dart';
@@ -30,9 +31,10 @@ class NandayDependencyInjector {
     // SERVICES //
         .map<TwitchKeysReader>((injector) => TwitchKeysReader(), isSingleton: true)
         .map<TwitchAuthenticationService>((injector) => TwitchAuthenticationServiceImpl(injector.get()), isSingleton: true)
-        .map<TwitchChatService>((injector) => TwitchChatServiceImpl(injector.get()), isSingleton: true)
+        .map<TwitchChatService>((injector) => TwitchChatServiceImpl(injector.get(), injector.get()), isSingleton: true)
         .map<TextToSpeechService>((injector) => TextToSpeechService(), isSingleton: true)
         .map<PreferencesService>((injector) => PreferencesServiceImpl(), isSingleton: true)
+        .map<BroadcastMessagesService>((injector) => BroadcastMessagesServiceImpl(injector.get()), isSingleton: true)
     // VIEW MODELS //
       // Login //
         .map<LoginPageViewModel>((injector) => LoginPageViewModel(injector.get()))

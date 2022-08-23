@@ -2,13 +2,25 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:nanday_twitch_app/services/broadcast_messages_service.dart';
 import 'package:nanday_twitch_app/services/twitch_keys_reader.dart';
 import 'package:web_socket_channel/io.dart';
 
 abstract class TwitchChatService {
+  ///
+  /// Attempts to connect to the Twitch channel
+  ///
   Future<bool> connect(String accessToken);
 
+  ///
+  /// Returns a stream of messages from Twitch chat
+  ///
   Stream<TwitchChatMessage> getMessagesStream();
+
+  ///
+  /// Sends a message to Twitch chat
+  ///
+  Future<bool> sendChatMessage(String message);
 }
 
 class TwitchChatMessage {
@@ -19,15 +31,21 @@ class TwitchChatMessage {
 }
 
 class TwitchChatServiceImpl implements TwitchChatService {
-
-  TwitchChatServiceImpl(this._keysReader);
+  TwitchChatServiceImpl(this._keysReader, this._broadcastMessagesService);
 
   final TwitchKeysReader _keysReader;
+  final BroadcastMessagesService _broadcastMessagesService;
 
   bool? _connectedSuccessfully;
+
   IOWebSocketChannel? channel;
   final StreamController<TwitchChatMessage> _streamController = StreamController();
   final LineSplitter lineSplitter = const LineSplitter();
+
+  // Broadcast messages //
+  List<String> _broadcastMessages = [];
+  bool _isBroadcastMessagesLoopRunning = false;
+  int _broadcastMessagesIndex = 0;
 
   @override
   Future<bool> connect(String accessToken) async {
@@ -55,6 +73,12 @@ class TwitchChatServiceImpl implements TwitchChatService {
 
     if (_connectedSuccessfully == true) {
       channel!.sink.add('JOIN #${twitchKeys.channelName}');
+
+      _broadcastMessagesService.onMessagesUpdated.add(() {
+        _updateBroadcastMessages();
+      });
+      await _updateBroadcastMessages();
+      _handleBroadcastMessages();
     }
 
     return _connectedSuccessfully == null ? false : _connectedSuccessfully!;
@@ -80,7 +104,7 @@ class TwitchChatServiceImpl implements TwitchChatService {
       }
 
       // Ping-pong //
-      switch(parsedMessage.command) {
+      switch (parsedMessage.command) {
         case 'PING':
           channel!.sink.add('PONG :tmi.twitch.tv');
           break;
@@ -102,6 +126,51 @@ class TwitchChatServiceImpl implements TwitchChatService {
           break;
       }
     }
+  }
+
+  void _handleBroadcastMessages() async {
+    if (_isBroadcastMessagesLoopRunning == true) {
+      return;
+    }
+
+    _isBroadcastMessagesLoopRunning = true;
+    while (true) {
+      if (_broadcastMessages.isEmpty) {
+        _isBroadcastMessagesLoopRunning = false;
+        _broadcastMessagesIndex = 0;
+        return;
+      }
+
+      String messageToBroadcast = _broadcastMessages[_broadcastMessagesIndex];
+      print("Sending message $messageToBroadcast");
+      // if (!await sendChatMessage(messageToBroadcast)) {
+      //   print("Issue sending the chat message!");
+      // }
+
+      if (_broadcastMessagesIndex == _broadcastMessages.length - 1) {
+        _broadcastMessagesIndex = 0;
+      } else {
+        _broadcastMessagesIndex++;
+      }
+
+      await Future.delayed(const Duration(seconds: 30));
+    }
+  }
+
+  Future _updateBroadcastMessages() async {
+    _broadcastMessages = await _broadcastMessagesService.getSavedMessages();
+    _broadcastMessagesIndex = 0;
+    _handleBroadcastMessages();
+  }
+
+  @override
+  Future<bool> sendChatMessage(String message) async {
+    if (channel == null) {
+      return false;
+    }
+    TwitchKeys twitchKeys = await _keysReader.getTwitchKeys();
+    channel!.sink.add('PRIVMSG #${twitchKeys.channelName} :$message');
+    return true;
   }
 }
 
