@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:nanday_twitch_app/models/twitch_notification.dart';
 import 'package:nanday_twitch_app/services/broadcast_messages_service.dart';
 import 'package:nanday_twitch_app/services/twitch_keys_reader.dart';
 import 'package:web_socket_channel/io.dart';
@@ -16,6 +17,11 @@ abstract class TwitchChatService {
   /// Returns a stream of messages from Twitch chat
   ///
   Stream<TwitchChatMessage> getMessagesStream();
+
+  ///
+  /// Returns a stream of notifications from Twitch
+  ///
+  Stream<TwitchNotification> getNotificationsStream();
 
   ///
   /// Sends a message to Twitch chat
@@ -39,7 +45,8 @@ class TwitchChatServiceImpl implements TwitchChatService {
   bool? _connectedSuccessfully;
 
   IOWebSocketChannel? channel;
-  final StreamController<TwitchChatMessage> _streamController = StreamController();
+  final StreamController<TwitchChatMessage> _chatMessagesStreamController = StreamController();
+  final StreamController<TwitchNotification> _notificationStreamController = StreamController();
   final LineSplitter lineSplitter = const LineSplitter();
 
   // Broadcast messages //
@@ -84,9 +91,26 @@ class TwitchChatServiceImpl implements TwitchChatService {
     return _connectedSuccessfully == null ? false : _connectedSuccessfully!;
   }
 
+
+
+  @override
+  Future<bool> sendChatMessage(String message) async {
+    if (channel == null) {
+      return false;
+    }
+    TwitchKeys twitchKeys = await _keysReader.getTwitchKeys();
+    channel!.sink.add('PRIVMSG #${twitchKeys.channelName} :$message');
+    return true;
+  }
+
   @override
   Stream<TwitchChatMessage> getMessagesStream() {
-    return _streamController.stream;
+    return _chatMessagesStreamController.stream;
+  }
+
+  @override
+  Stream<TwitchNotification> getNotificationsStream() {
+    return _notificationStreamController.stream;
   }
 
   void _parseChannelStreamMessages(event) {
@@ -112,7 +136,39 @@ class TwitchChatServiceImpl implements TwitchChatService {
         case 'PRIVMSG':
           String author = parsedMessage.prefix.split('!')[0];
           TwitchChatMessage chatMessage = TwitchChatMessage(author, parsedMessage.params[1]);
-          _streamController.sink.add(chatMessage);
+          _chatMessagesStreamController.sink.add(chatMessage);
+          break;
+
+        case 'USERNOTICE':
+          String messageTypeId = parsedMessage.tags['msg-id'];
+          TwitchNotificationType? notificationType;
+          switch (messageTypeId) {
+            case 'sub':
+              notificationType = TwitchNotificationType.SUBSCRIBE;
+              break;
+
+            case 'resub':
+              notificationType = TwitchNotificationType.RESUSCRIBE;
+              break;
+
+            case 'raid':
+              notificationType = TwitchNotificationType.RAID;
+              break;
+
+            case 'subgift':
+              notificationType = TwitchNotificationType.SUBSCRIPTION_GIFT;
+              break;
+
+            case 'anonsubgift':
+              notificationType = TwitchNotificationType.SUBSCRIPTION_GIFT_ANON;
+              break;
+          }
+          if (notificationType != null) {
+            String username = parsedMessage.tags['display-name'];
+            TwitchNotification notification = TwitchNotification(notificationType, username);
+            _notificationStreamController.sink.add(notification);
+          }
+
           break;
 
         case '001':
@@ -161,16 +217,6 @@ class TwitchChatServiceImpl implements TwitchChatService {
     _broadcastMessages = await _broadcastMessagesService.getSavedMessages();
     _broadcastMessagesIndex = 0;
     _handleBroadcastMessages();
-  }
-
-  @override
-  Future<bool> sendChatMessage(String message) async {
-    if (channel == null) {
-      return false;
-    }
-    TwitchKeys twitchKeys = await _keysReader.getTwitchKeys();
-    channel!.sink.add('PRIVMSG #${twitchKeys.channelName} :$message');
-    return true;
   }
 }
 

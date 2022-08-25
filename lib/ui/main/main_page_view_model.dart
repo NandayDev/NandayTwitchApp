@@ -1,4 +1,5 @@
 import 'package:nanday_twitch_app/constants.dart';
+import 'package:nanday_twitch_app/models/twitch_notification.dart';
 import 'package:nanday_twitch_app/services/preferences_service.dart';
 import 'package:nanday_twitch_app/services/text_to_speech_service.dart';
 import 'package:nanday_twitch_app/services/twitch_authentication_service.dart';
@@ -41,6 +42,7 @@ class MainPageViewModel extends NandayViewModel {
     await _twitchChatService.connect(_authenticationService.accessToken!);
     isLoading = false;
     notifyListeners();
+    // Chat messages //
     Stream<TwitchChatMessage> stream = _twitchChatService.getMessagesStream();
     stream.listen((chatMessage) {
       if (chatMessages.length == 50) {
@@ -48,6 +50,28 @@ class MainPageViewModel extends NandayViewModel {
       }
       chatMessages.add(chatMessage);
       notifyListeners();
+    });
+
+    // Notifications //
+    Stream<TwitchNotification> notificationStream = _twitchChatService.getNotificationsStream();
+    notificationStream.listen((notification) {
+      switch(notification.notificationType) {
+        case TwitchNotificationType.SUBSCRIBE:
+          _twitchChatService.sendChatMessage('Thank you ${notification.username} for subscribing to the channel!');
+          break;
+        case TwitchNotificationType.RESUSCRIBE:
+          _twitchChatService.sendChatMessage('Thank you ${notification.username} for resubscribing to the channel!');
+          break;
+        case TwitchNotificationType.SUBSCRIPTION_GIFT:
+          _twitchChatService.sendChatMessage('Thank you ${notification.username} for gifting subscribers to the channel!');
+          break;
+        case TwitchNotificationType.SUBSCRIPTION_GIFT_ANON:
+          _twitchChatService.sendChatMessage('Thank you ${notification.username} for gifting subscribers to the channel!');
+          break;
+        case TwitchNotificationType.RAID:
+          _twitchChatService.sendChatMessage('Wow, so many people! Thank you ${notification.username} for raiding this channel!');
+          break;
+      }
     });
   }
 

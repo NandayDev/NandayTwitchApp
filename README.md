@@ -15,13 +15,16 @@ Currently running on Windows only. Planning to add MacOS, and maybe Linux, later
   * [X] Read it aloud
     * [X] Bot's language should be selectable
 * [X] Sends periodic messages to the chat with some predefined messages (such as "Subscribe!" or similar)
-* [ ] Thanks new followers, new subscribers
+* [X] Thanks new subscribers
 * [ ] Says "Hi!" to new people joining the chat
+* [ ] Custom commands
+  * [ ] "!what" to get to know what the streamer is doing today
+  * [ ] "!time": get local time in the streamer's time zone
 
 ### Features on hold
 
 * [ ] Show a popup on the streaming screen with a chat message sent by a user
-
+* [ ] Thanks new followers
 
 ## Building the app
 
