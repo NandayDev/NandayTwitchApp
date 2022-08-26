@@ -4,6 +4,8 @@ import 'dart:io';
 
 import 'package:nanday_twitch_app/models/twitch_notification.dart';
 import 'package:nanday_twitch_app/services/broadcast_messages_service.dart';
+import 'package:nanday_twitch_app/services/logger_service.dart';
+import 'package:nanday_twitch_app/services/preferences_service.dart';
 import 'package:nanday_twitch_app/services/twitch_keys_reader.dart';
 import 'package:web_socket_channel/io.dart';
 
@@ -37,17 +39,18 @@ class TwitchChatMessage {
 }
 
 class TwitchChatServiceImpl implements TwitchChatService {
-  TwitchChatServiceImpl(this._keysReader, this._broadcastMessagesService);
+  TwitchChatServiceImpl(this._keysReader, this._broadcastMessagesService, this._logger, this._preferencesService);
 
   final TwitchKeysReader _keysReader;
   final BroadcastMessagesService _broadcastMessagesService;
+  final LoggerService _logger;
+  final PreferencesService _preferencesService;
 
-  bool? _connectedSuccessfully;
+  bool? _connectedSuccessfully, _joinedRoomSuccessfully;
 
   IOWebSocketChannel? channel;
   final StreamController<TwitchChatMessage> _chatMessagesStreamController = StreamController();
   final StreamController<TwitchNotification> _notificationStreamController = StreamController();
-  final LineSplitter lineSplitter = const LineSplitter();
 
   // Broadcast messages //
   List<String> _broadcastMessages = [];
@@ -80,6 +83,11 @@ class TwitchChatServiceImpl implements TwitchChatService {
 
     if (_connectedSuccessfully == true) {
       channel!.sink.add('JOIN #${twitchKeys.channelName}');
+
+      while (_joinedRoomSuccessfully == null && retries < 240) {
+        retries++;
+        await Future.delayed(const Duration(milliseconds: 100));
+      }
 
       _broadcastMessagesService.onMessagesUpdated.add(() {
         _updateBroadcastMessages();
@@ -116,11 +124,10 @@ class TwitchChatServiceImpl implements TwitchChatService {
   void _parseChannelStreamMessages(event) {
     String channelMessage = event as String;
 
-    //List<String> messages = lineSplitter.convert(channelMessage);
     Iterable<String> messages = LineSplitter.split(channelMessage);
 
     for (String message in messages) {
-      print(message);
+      _logger.d(message);
 
       _ParsedMessage? parsedMessage = _ParsedMessage.parse(message);
       if (parsedMessage == null) {
@@ -175,6 +182,10 @@ class TwitchChatServiceImpl implements TwitchChatService {
           _connectedSuccessfully = true;
           break;
 
+        case 'ROOMSTATE':
+          _joinedRoomSuccessfully = true;
+          break;
+
         case 'NOTICE':
           if (message.contains('Login authentication failed')) {
             _connectedSuccessfully = false;
@@ -189,8 +200,12 @@ class TwitchChatServiceImpl implements TwitchChatService {
       return;
     }
 
+    int secondsBetweenMessages = await _preferencesService.getBroadcastDelay();
+    Duration betweenMessagesDuration = Duration(seconds: secondsBetweenMessages);
+
     _isBroadcastMessagesLoopRunning = true;
     while (true) {
+      await Future.delayed(betweenMessagesDuration);
       if (_broadcastMessages.isEmpty) {
         _isBroadcastMessagesLoopRunning = false;
         _broadcastMessagesIndex = 0;
@@ -198,10 +213,10 @@ class TwitchChatServiceImpl implements TwitchChatService {
       }
 
       String messageToBroadcast = _broadcastMessages[_broadcastMessagesIndex];
-      print("Sending message $messageToBroadcast");
-      // if (!await sendChatMessage(messageToBroadcast)) {
-      //   print("Issue sending the chat message!");
-      // }
+      _logger.i("Sending message $messageToBroadcast");
+      if (!await sendChatMessage(messageToBroadcast)) {
+        _logger.e("Issue sending the chat message!");
+      }
 
       if (_broadcastMessagesIndex == _broadcastMessages.length - 1) {
         _broadcastMessagesIndex = 0;
@@ -209,7 +224,7 @@ class TwitchChatServiceImpl implements TwitchChatService {
         _broadcastMessagesIndex++;
       }
 
-      await Future.delayed(const Duration(seconds: 30));
+      await Future.delayed(betweenMessagesDuration);
     }
   }
 

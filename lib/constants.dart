@@ -7,9 +7,7 @@ class Constants {
 
   static const List<String> CHAT_SCOPES = [ 'channel:moderate', 'chat:edit', 'chat:read' ];
 
-  // Preferences service keys //
-  static const String PSKEY_CHOSEN_LANGUAGE = "chosen_language";
-  static const String PSKEY_BROADCAST_MESSAGES = "broadcast_messages";
+
 
   static const String BROADCAST_MESSAGES_SEPARATOR = '###*###';
 

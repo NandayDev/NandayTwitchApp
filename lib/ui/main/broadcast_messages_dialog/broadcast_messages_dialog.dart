@@ -10,6 +10,8 @@ class BroadcastMessagesDialog extends StatefulWidget {
 }
 
 class _BroadcastMessagesDialogState extends State<BroadcastMessagesDialog> {
+  bool _broadcastDelayHasError = false;
+
   @override
   void initState() {
     super.initState();
@@ -21,6 +23,7 @@ class _BroadcastMessagesDialogState extends State<BroadcastMessagesDialog> {
   Widget build(BuildContext context) {
     BroadcastMessagesViewModel viewModel = Provider.of<BroadcastMessagesViewModel>(context);
     var messages = viewModel.messages;
+    var broadcastDelayController = TextEditingController(text: viewModel.broadcastDelay);
     return AlertDialog(
       title: const Text("Set broadcast messages here"),
       content: viewModel.isLoading
@@ -47,19 +50,32 @@ class _BroadcastMessagesDialogState extends State<BroadcastMessagesDialog> {
                               icon: const Icon(Icons.delete))
                         ]);
                       })),
-              Align(
-                  alignment: Alignment.centerRight,
-                  child: IconButton(
+              Row(
+                children: [
+                  SizedBox(
+                      width: 50.0,
+                      child: TextField(
+                          controller: broadcastDelayController,
+                          decoration: InputDecoration(errorText: _broadcastDelayHasError ? "Wrong input" : null))),
+                  IconButton(
                     onPressed: () {
                       viewModel.addNewMessage();
                     },
                     icon: const Icon(Icons.add),
-                  ))
+                  )
+                ],
+              )
             ]),
       actions: [
         TextButton(
             onPressed: () async {
               if (false == viewModel.isSaveButtonEnabled) {
+                return;
+              }
+              if (false == await viewModel.saveBroadcastDelay(broadcastDelayController.text)) {
+                setState(() {
+                  _broadcastDelayHasError = true;
+                });
                 return;
               }
               await viewModel.saveMessages();

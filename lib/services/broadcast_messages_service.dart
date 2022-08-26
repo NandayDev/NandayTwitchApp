@@ -25,17 +25,12 @@ class BroadcastMessagesServiceImpl implements BroadcastMessagesService {
 
   @override
   Future<List<String>> getSavedMessages() async {
-    String? stringFromPreferences = await _preferencesService.getString(Constants.PSKEY_BROADCAST_MESSAGES);
-    if (stringFromPreferences == null) {
-      return [];
-    }
-    return stringFromPreferences.split(Constants.BROADCAST_MESSAGES_SEPARATOR);
+    return _preferencesService.getBroadcastMessages();
   }
 
   @override
   Future setSavedMessages(List<String> messages) async {
-    String stringToSave = messages.join(Constants.BROADCAST_MESSAGES_SEPARATOR);
-    await _preferencesService.setString(Constants.PSKEY_BROADCAST_MESSAGES, stringToSave);
+    await _preferencesService.setBroadcastMessages(messages); //todo handle error
     for (Function() messagesUpdatedFunction in onMessagesUpdated) {
       messagesUpdatedFunction();
     }
