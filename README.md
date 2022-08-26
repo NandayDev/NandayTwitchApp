@@ -31,6 +31,10 @@ Currently running on Windows only. Planning to add MacOS, and maybe Linux, later
 
 * [ ] Security?
 
+### Bugs to fix
+
+* [ ] Double broadcast messages
+
 ## Building the app
 
 Simply power up Android Studio after installing Flutter with this project.

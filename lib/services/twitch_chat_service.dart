@@ -89,17 +89,16 @@ class TwitchChatServiceImpl implements TwitchChatService {
         await Future.delayed(const Duration(milliseconds: 100));
       }
 
+      sendChatMessage("NaNDayDev Bot is alive!");
+
       _broadcastMessagesService.onMessagesUpdated.add(() {
         _updateBroadcastMessages();
       });
       await _updateBroadcastMessages();
-      _handleBroadcastMessages();
     }
 
     return _connectedSuccessfully == null ? false : _connectedSuccessfully!;
   }
-
-
 
   @override
   Future<bool> sendChatMessage(String message) async {
@@ -175,7 +174,6 @@ class TwitchChatServiceImpl implements TwitchChatService {
             TwitchNotification notification = TwitchNotification(notificationType, username);
             _notificationStreamController.sink.add(notification);
           }
-
           break;
 
         case '001':
@@ -205,12 +203,13 @@ class TwitchChatServiceImpl implements TwitchChatService {
 
     _isBroadcastMessagesLoopRunning = true;
     while (true) {
-      await Future.delayed(betweenMessagesDuration);
       if (_broadcastMessages.isEmpty) {
         _isBroadcastMessagesLoopRunning = false;
         _broadcastMessagesIndex = 0;
         return;
       }
+
+      await Future.delayed(betweenMessagesDuration);
 
       String messageToBroadcast = _broadcastMessages[_broadcastMessagesIndex];
       _logger.i("Sending message $messageToBroadcast");
@@ -224,7 +223,6 @@ class TwitchChatServiceImpl implements TwitchChatService {
         _broadcastMessagesIndex++;
       }
 
-      await Future.delayed(betweenMessagesDuration);
     }
   }
 
