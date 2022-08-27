@@ -1,14 +1,16 @@
-import 'package:nanday_twitch_app/constants.dart';
 import 'package:nanday_twitch_app/models/twitch_notification.dart';
-import 'package:nanday_twitch_app/services/twitch_chat_user_service.dart';
+import 'package:nanday_twitch_app/services/broadcast_messages_service.dart';
+import 'package:nanday_twitch_app/services/event_service.dart';
 import 'package:nanday_twitch_app/services/preferences_service.dart';
 import 'package:nanday_twitch_app/services/text_to_speech_service.dart';
 import 'package:nanday_twitch_app/services/twitch_authentication_service.dart';
+import 'package:nanday_twitch_app/services/twitch_chat_command_service.dart';
 import 'package:nanday_twitch_app/services/twitch_chat_service.dart';
 import 'package:nanday_twitch_app/ui/base/nanday_view_model.dart';
 
 class MainPageViewModel extends NandayViewModel {
-  MainPageViewModel(this._twitchChatService, this._userService, this._authenticationService, this._textToSpeechService, this._preferencesService);
+  MainPageViewModel(this._twitchChatService, this._twitchChatCommandService, this._broadcastMessagesService, this._authenticationService, this._textToSpeechService,
+      this._preferencesService, this._eventService);
 
   final List<TwitchChatMessage> chatMessages = [];
   bool isLoading = true;
@@ -17,14 +19,18 @@ class MainPageViewModel extends NandayViewModel {
   bool isLoadingLanguage = true;
 
   final TwitchChatService _twitchChatService;
-  final TwitchChatUserService _userService;
+  final TwitchChatCommandService _twitchChatCommandService;
+  final BroadcastMessagesService _broadcastMessagesService;
   final TwitchAuthenticationService _authenticationService;
   final TextToSpeechService _textToSpeechService;
   final PreferencesService _preferencesService;
+  final EventService _eventService;
 
   void initialize() async {
+    _twitchChatCommandService.initialize();
     await _initializeTwitchChat();
     await _getAvailableLanguages();
+    _broadcastMessagesService.initialize();
   }
 
   void setLanguage(String language) async {
@@ -44,39 +50,12 @@ class MainPageViewModel extends NandayViewModel {
     await _twitchChatService.connect(_authenticationService.accessToken!);
     isLoading = false;
     notifyListeners();
+
     // Chat messages //
-    Stream<TwitchChatMessage> stream = _twitchChatService.getMessagesStream();
-    stream.listen((chatMessage) {
-      _userService.onMessageReceived(chatMessage);
-      if (chatMessages.length == 50) {
-        chatMessages.removeAt(0);
-      }
-      chatMessages.add(chatMessage);
-      notifyListeners();
-    });
+    _eventService.subscribeToChatMessageReceivedEvent(onChatMessageReceived);
 
     // Notifications //
-    Stream<TwitchNotification> notificationStream = _twitchChatService.getNotificationsStream();
-    notificationStream.listen((notification) {
-      switch(notification.notificationType) {
-        case TwitchNotificationType.SUBSCRIBE:
-          _twitchChatService.sendChatMessage('Thank you ${notification.username} for subscribing to the channel!');
-          break;
-        case TwitchNotificationType.RESUSCRIBE:
-          _twitchChatService.sendChatMessage('Thank you ${notification.username} for resubscribing to the channel!');
-          break;
-        case TwitchNotificationType.SUBSCRIPTION_GIFT:
-          _twitchChatService.sendChatMessage('Thank you ${notification.username} for gifting subscribers to the channel!');
-          break;
-        case TwitchNotificationType.SUBSCRIPTION_GIFT_ANON:
-          _twitchChatService.sendChatMessage('Thank you ${notification.username} for gifting subscribers to the channel!');
-          break;
-        case TwitchNotificationType.RAID:
-          // TODO evaluate the raid size !
-          _twitchChatService.sendChatMessage('Wow, so many people! Thank you ${notification.username} for raiding this channel!');
-          break;
-      }
-    });
+    _eventService.subscribeToNotificationReceivedEvent(onNotificationReceived);
   }
 
   Future _getAvailableLanguages() async {
@@ -103,5 +82,34 @@ class MainPageViewModel extends NandayViewModel {
         chosenLanguage = languageToUse;
       }
     });
+  }
+
+  void onChatMessageReceived(TwitchChatMessage chatMessage) {
+    if (chatMessages.length == 50) {
+      chatMessages.removeAt(0);
+    }
+    chatMessages.add(chatMessage);
+    notifyListeners();
+  }
+
+  void onNotificationReceived(TwitchNotification notification) {
+    switch (notification.notificationType) {
+      case TwitchNotificationType.SUBSCRIBE:
+        _twitchChatService.sendChatMessage('Thank you ${notification.username} for subscribing to the channel!');
+        break;
+      case TwitchNotificationType.RESUSCRIBE:
+        _twitchChatService.sendChatMessage('Thank you ${notification.username} for resubscribing to the channel!');
+        break;
+      case TwitchNotificationType.SUBSCRIPTION_GIFT:
+        _twitchChatService.sendChatMessage('Thank you ${notification.username} for gifting subscribers to the channel!');
+        break;
+      case TwitchNotificationType.SUBSCRIPTION_GIFT_ANON:
+        _twitchChatService.sendChatMessage('Thank you ${notification.username} for gifting subscribers to the channel!');
+        break;
+      case TwitchNotificationType.RAID:
+        // TODO evaluate the raid size !
+        _twitchChatService.sendChatMessage('Wow, so many people! Thank you ${notification.username} for raiding this channel!');
+        break;
+    }
   }
 }

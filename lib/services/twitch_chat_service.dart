@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:nanday_twitch_app/models/twitch_notification.dart';
 import 'package:nanday_twitch_app/services/broadcast_messages_service.dart';
+import 'package:nanday_twitch_app/services/event_service.dart';
 import 'package:nanday_twitch_app/services/logger_service.dart';
 import 'package:nanday_twitch_app/services/preferences_service.dart';
 import 'package:nanday_twitch_app/services/twitch_keys_reader.dart';
@@ -14,16 +15,6 @@ abstract class TwitchChatService {
   /// Attempts to connect to the Twitch channel
   ///
   Future<bool> connect(String accessToken);
-
-  ///
-  /// Returns a stream of messages from Twitch chat
-  ///
-  Stream<TwitchChatMessage> getMessagesStream();
-
-  ///
-  /// Returns a stream of notifications from Twitch
-  ///
-  Stream<TwitchNotification> getNotificationsStream();
 
   ///
   /// Sends a message to Twitch chat
@@ -39,23 +30,15 @@ class TwitchChatMessage {
 }
 
 class TwitchChatServiceImpl implements TwitchChatService {
-  TwitchChatServiceImpl(this._keysReader, this._broadcastMessagesService, this._logger, this._preferencesService);
+  TwitchChatServiceImpl(this._keysReader, this._logger, this._eventService);
 
   final TwitchKeysReader _keysReader;
-  final BroadcastMessagesService _broadcastMessagesService;
   final LoggerService _logger;
-  final PreferencesService _preferencesService;
+  final EventService _eventService;
 
   bool? _connectedSuccessfully, _joinedRoomSuccessfully;
 
   IOWebSocketChannel? channel;
-  final StreamController<TwitchChatMessage> _chatMessagesStreamController = StreamController();
-  final StreamController<TwitchNotification> _notificationStreamController = StreamController();
-
-  // Broadcast messages //
-  List<String> _broadcastMessages = [];
-  bool _isBroadcastMessagesLoopRunning = false;
-  int _broadcastMessagesIndex = 0;
 
   @override
   Future<bool> connect(String accessToken) async {
@@ -90,11 +73,6 @@ class TwitchChatServiceImpl implements TwitchChatService {
       }
 
       sendChatMessage("NaNDayDev Bot is alive!");
-
-      _broadcastMessagesService.onMessagesUpdated.add(() {
-        _updateBroadcastMessages();
-      });
-      await _updateBroadcastMessages();
     }
 
     return _connectedSuccessfully == null ? false : _connectedSuccessfully!;
@@ -108,16 +86,6 @@ class TwitchChatServiceImpl implements TwitchChatService {
     TwitchKeys twitchKeys = await _keysReader.getTwitchKeys();
     channel!.sink.add('PRIVMSG #${twitchKeys.channelName} :$message');
     return true;
-  }
-
-  @override
-  Stream<TwitchChatMessage> getMessagesStream() {
-    return _chatMessagesStreamController.stream;
-  }
-
-  @override
-  Stream<TwitchNotification> getNotificationsStream() {
-    return _notificationStreamController.stream;
   }
 
   void _parseChannelStreamMessages(event) {
@@ -142,7 +110,7 @@ class TwitchChatServiceImpl implements TwitchChatService {
         case 'PRIVMSG':
           String author = parsedMessage.prefix.split('!')[0];
           TwitchChatMessage chatMessage = TwitchChatMessage(author, parsedMessage.params[1]);
-          _chatMessagesStreamController.sink.add(chatMessage);
+          _eventService.chatMessageReceived(chatMessage);
           break;
 
         case 'USERNOTICE':
@@ -172,7 +140,7 @@ class TwitchChatServiceImpl implements TwitchChatService {
           if (notificationType != null) {
             String username = parsedMessage.tags['display-name'];
             TwitchNotification notification = TwitchNotification(notificationType, username);
-            _notificationStreamController.sink.add(notification);
+            _eventService.notificationReceived(notification);
           }
           break;
 
@@ -191,45 +159,6 @@ class TwitchChatServiceImpl implements TwitchChatService {
           break;
       }
     }
-  }
-
-  void _handleBroadcastMessages() async {
-    if (_isBroadcastMessagesLoopRunning == true) {
-      return;
-    }
-
-    int secondsBetweenMessages = await _preferencesService.getBroadcastDelay();
-    Duration betweenMessagesDuration = Duration(seconds: secondsBetweenMessages);
-
-    _isBroadcastMessagesLoopRunning = true;
-    while (true) {
-      if (_broadcastMessages.isEmpty) {
-        _isBroadcastMessagesLoopRunning = false;
-        _broadcastMessagesIndex = 0;
-        return;
-      }
-
-      await Future.delayed(betweenMessagesDuration);
-
-      String messageToBroadcast = _broadcastMessages[_broadcastMessagesIndex];
-      _logger.i("Sending message $messageToBroadcast");
-      if (!await sendChatMessage(messageToBroadcast)) {
-        _logger.e("Issue sending the chat message!");
-      }
-
-      if (_broadcastMessagesIndex == _broadcastMessages.length - 1) {
-        _broadcastMessagesIndex = 0;
-      } else {
-        _broadcastMessagesIndex++;
-      }
-
-    }
-  }
-
-  Future _updateBroadcastMessages() async {
-    _broadcastMessages = await _broadcastMessagesService.getSavedMessages();
-    _broadcastMessagesIndex = 0;
-    _handleBroadcastMessages();
   }
 }
 

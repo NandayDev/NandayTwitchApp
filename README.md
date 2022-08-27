@@ -17,6 +17,7 @@ Currently running on Windows only. Planning to add MacOS, and maybe Linux, later
 - [x] Sends periodic messages to the chat with some predefined messages (such as "Subscribe!" or similar)
   - [x] Add a textbox to choose how many seconds should pass between each predefined message
 - [x] Thanks new subscribers
+- [ ] Thanks new followers
 - [x] Says "Hi!" to new people joining the chat
 - [ ] Custom commands
   - [ ] "!what" to get to know what the streamer is doing today
@@ -29,11 +30,12 @@ Currently running on Windows only. Planning to add MacOS, and maybe Linux, later
 ### Features on hold
 
 - [ ] Show a popup on the streaming screen with a chat message sent by a user
-- [ ] Thanks new followers
 
 ### Improvements
 
+- [ ] Creating a centralized event center for notifications to the app components
 - [ ] Evaluate raid size when someone raids: saying "Wow, a lot of people!" in the chat could be sarcastic!
+- [ ] Broadcast messages should be sent by the BroadcastService, not the TwitchChatService
 
 ### Other aspects
 

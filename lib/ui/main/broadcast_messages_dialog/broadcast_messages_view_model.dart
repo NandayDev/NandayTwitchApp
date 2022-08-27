@@ -1,12 +1,13 @@
 import 'package:nanday_twitch_app/constants.dart';
 import 'package:nanday_twitch_app/services/broadcast_messages_service.dart';
+import 'package:nanday_twitch_app/services/event_service.dart';
 import 'package:nanday_twitch_app/services/preferences_service.dart';
 import 'package:nanday_twitch_app/ui/base/nanday_view_model.dart';
 
 class BroadcastMessagesViewModel extends NandayViewModel {
-  BroadcastMessagesViewModel(this._broadcastMessagesService, this._preferencesService);
+  BroadcastMessagesViewModel(this._eventService, this._preferencesService);
 
-  final BroadcastMessagesService _broadcastMessagesService;
+  final EventService _eventService;
   final PreferencesService _preferencesService;
 
   final List<String> messages = [];
@@ -15,7 +16,7 @@ class BroadcastMessagesViewModel extends NandayViewModel {
   String broadcastDelay = "";
 
   void loadMessages() async {
-    var broadcastMessages = await _broadcastMessagesService.getSavedMessages();
+    var broadcastMessages = await _preferencesService.getBroadcastMessages();
     String secondsBetweenMessagesFromPrefs = (await _preferencesService.getBroadcastDelay()).toString();
     notifyPropertyChanged(() {
       broadcastDelay = secondsBetweenMessagesFromPrefs;
@@ -46,11 +47,12 @@ class BroadcastMessagesViewModel extends NandayViewModel {
     });
   }
 
-  Future saveMessages() {
+  Future saveMessages() async {
     notifyPropertyChanged(() {
       isSaveButtonEnabled = false;
     });
-    return _broadcastMessagesService.setSavedMessages(messages);
+    await _preferencesService.setBroadcastMessages(messages);
+    _eventService.broadcastMessagesChanged(messages);
   }
 
   Future<bool> saveBroadcastDelay(String text) async {
