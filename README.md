@@ -8,32 +8,40 @@ Currently running on Windows only. Planning to add MacOS, and maybe Linux, later
 
 ## Features
 
-* [X] Authentication:
-  * [X] with Twitch APIs
-  * [X] with Twitch Chat Interface
-* [X] Displays a list of messages from the Twitch chat and lets you select one. Then you may:
-  * [X] Read it aloud
-    * [X] Bot's language should be selectable
-* [X] Sends periodic messages to the chat with some predefined messages (such as "Subscribe!" or similar)
-  * [X] Add a textbox to choose how many seconds should pass between each predefined message
-* [X] Thanks new subscribers
-* [X] Says "Hi!" to new people joining the chat
-* [ ] Custom commands
-  * [ ] "!what" to get to know what the streamer is doing today
-  * [ ] "!time": get local time in the streamer's time zone
+- [x] Authentication:
+  - [x] with Twitch APIs
+  - [x] with Twitch Chat Interface
+- [x] Displays a list of messages from the Twitch chat and lets you select one. Then you may:
+  - [x] Read it aloud
+    - [x] Bot's language should be selectable
+- [x] Sends periodic messages to the chat with some predefined messages (such as "Subscribe!" or similar)
+  - [x] Add a textbox to choose how many seconds should pass between each predefined message
+- [x] Thanks new subscribers
+- [x] Says "Hi!" to new people joining the chat
+- [ ] Custom commands
+  - [ ] "!what" to get to know what the streamer is doing today
+  - [ ] "!time": get local time in the streamer's time zone
+- [ ] Sounds
+  - [ ] Soft sound when someone writes a message in the chat
+  - [ ] When someone subscribes
+  - [ ] When someone raids
 
 ### Features on hold
 
-* [ ] Show a popup on the streaming screen with a chat message sent by a user
-* [ ] Thanks new followers
+- [ ] Show a popup on the streaming screen with a chat message sent by a user
+- [ ] Thanks new followers
+
+### Improvements
+
+- [ ] Evaluate raid size when someone raids: saying "Wow, a lot of people!" in the chat could be sarcastic!
 
 ### Other aspects
 
-* [ ] Security?
+- [ ] Security?
 
 ### Bugs to fix
 
-* [ ] Double broadcast messages
+- [x] Double broadcast messages
 
 ## Building the app
 
