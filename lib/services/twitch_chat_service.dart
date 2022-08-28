@@ -148,8 +148,11 @@ class TwitchChatServiceImpl implements TwitchChatService {
               break;
 
             case 'raid':
-              notificationType = TwitchNotificationType.RAID;
-              break;
+              String raider = parsedMessage.tags['msg-param-displayName'];
+              int viewerCount = int.parse(parsedMessage.tags['msg-param-viewerCount']);
+              TwitchRaidNotification notification = TwitchRaidNotification(TwitchNotificationType.RAID, raider, viewerCount);
+              _eventService.notificationReceived(notification);
+              return;
 
             case 'subgift':
               notificationType = TwitchNotificationType.SUBSCRIPTION_GIFT;

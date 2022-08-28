@@ -1,6 +1,5 @@
 import 'dart:collection';
 
-import 'package:intl/date_symbol_data_file.dart';
 import 'package:intl/intl.dart';
 import 'package:nanday_twitch_app/services/event_service.dart';
 import 'package:nanday_twitch_app/services/preferences_service.dart';
@@ -64,7 +63,7 @@ class TwitchChatCommandServiceImpl implements TwitchChatCommandService {
           }
           List<String>? otherParts = match.group(2)?.split(' ');
           if (otherParts != null && otherParts.isNotEmpty) {
-            switch(otherParts[0]) {
+            switch (otherParts[0]) {
               case 'what':
                 String whatCommandContent = chatMessage.message.substring(14);
                 if (await _preferencesService.setWhatCommandContent(whatCommandContent)) {

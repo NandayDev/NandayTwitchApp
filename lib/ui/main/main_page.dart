@@ -45,7 +45,13 @@ class _MainPageState extends State<MainPage> {
         body: viewModel.isLoading
             ? const Center(child: CircularProgressIndicator())
             : Column(children: [
-                viewModel.isLoadingLanguage ? const CircularProgressIndicator() : _createLanguagesDropDownButton(viewModel),
+                Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+                  Text('TTS language: ', style: Theme.of(context).textTheme.bodyLarge),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 15.0),
+                    child: viewModel.isLoadingLanguage ? const CircularProgressIndicator() : _createLanguagesDropDownButton(viewModel),
+                  )
+                ]),
                 Expanded(
                   child: chatMessages.isEmpty
                       ? const Center(
@@ -64,11 +70,6 @@ class _MainPageState extends State<MainPage> {
                               child: ChatMessageWidget(chatMessage),
                             );
                           }),
-                  // floatingActionButton: FloatingActionButton(
-                  //   onPressed: _incrementCounter,
-                  //   tooltip: 'Increment',
-                  //   child: const Icon(Icons.add),
-                  // ), // This trailing comma makes auto-formatting nicer for build methods.
                 )
               ]));
 

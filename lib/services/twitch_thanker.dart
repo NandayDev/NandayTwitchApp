@@ -22,23 +22,25 @@ class TwitchThankerImpl implements TwitchThanker {
   void _onNotificationReceived(TwitchNotification notification) {
     switch (notification.notificationType) {
       case TwitchNotificationType.NEW_FOLLOWER:
-        _twitchChatService.sendChatMessage('Thank you ${notification.username} for following me!');
+        _twitchChatService.sendChatMessage('New follower! Thank you ${notification.username} for joining this fellowship through the dark lands!');
         break;
       case TwitchNotificationType.SUBSCRIBE:
-        _twitchChatService.sendChatMessage('Thank you ${notification.username} for subscribing to the channel!');
+        _twitchChatService.sendChatMessage('Wow! Thank you ${notification.username} for financing this impossible journey!');
         break;
       case TwitchNotificationType.RESUBSCRIBE:
-        _twitchChatService.sendChatMessage('Thank you ${notification.username} for resubscribing to the channel!');
+        _twitchChatService.sendChatMessage('Hooray! Thank you ${notification.username} for keeping the parrots well fed!');
         break;
       case TwitchNotificationType.SUBSCRIPTION_GIFT:
-        _twitchChatService.sendChatMessage('Thank you ${notification.username} for gifting subscribers to the channel!');
-        break;
       case TwitchNotificationType.SUBSCRIPTION_GIFT_ANON:
-        _twitchChatService.sendChatMessage('Thank you ${notification.username} for gifting subscribers to the channel!');
+        _twitchChatService.sendChatMessage('Santa is coming! Thank you ${notification.username} for keeping this infernal machine going!');
         break;
       case TwitchNotificationType.RAID:
-      // TODO evaluate the raid size !
-        _twitchChatService.sendChatMessage('Wow, so many people! Thank you ${notification.username} for raiding this channel!');
+        TwitchRaidNotification raidNotification = notification as TwitchRaidNotification;
+        if (raidNotification.raidersCount > 4) {
+          _twitchChatService.sendChatMessage('Wow, so many people! Thank you ${notification.username} for joining the dark side of programming!');
+        } else {
+          _twitchChatService.sendChatMessage('RAID INCOMING! Thank you ${notification.username} for joining the dark side of programming!');
+        }
         break;
     }
   }

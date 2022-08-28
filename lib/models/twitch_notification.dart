@@ -5,7 +5,7 @@ class TwitchNotification {
   TwitchNotification(this.notificationType, this.username);
 
   final TwitchNotificationType notificationType;
-  String username;
+  final String username;
 }
 
 enum TwitchNotificationType {
@@ -15,4 +15,12 @@ enum TwitchNotificationType {
   SUBSCRIPTION_GIFT,
   SUBSCRIPTION_GIFT_ANON,
   RAID
+}
+
+class TwitchRaidNotification extends TwitchNotification {
+
+  TwitchRaidNotification(TwitchNotificationType notificationType, String username, this.raidersCount)
+      : super(notificationType, username);
+
+  final int raidersCount;
 }

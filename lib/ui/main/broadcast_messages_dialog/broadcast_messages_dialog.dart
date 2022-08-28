@@ -25,7 +25,7 @@ class _BroadcastMessagesDialogState extends State<BroadcastMessagesDialog> {
     var messages = viewModel.messages;
     var broadcastDelayController = TextEditingController(text: viewModel.broadcastDelay);
     return AlertDialog(
-      title: const Text("Set broadcast messages here"),
+      title: const Text("Set broadcast messages here 👇"),
       content: viewModel.isLoading
           ? const Center(child: CircularProgressIndicator())
           : Column(children: [
