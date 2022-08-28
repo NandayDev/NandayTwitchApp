@@ -1,6 +1,7 @@
 import 'package:flutter_simple_dependency_injection/injector.dart';
 import 'package:nanday_twitch_app/services/broadcast_messages_service.dart';
 import 'package:nanday_twitch_app/services/event_service.dart';
+import 'package:nanday_twitch_app/services/sound_service.dart';
 import 'package:nanday_twitch_app/services/twitch_chat_command_service.dart';
 import 'package:nanday_twitch_app/services/logger_service.dart';
 import 'package:nanday_twitch_app/services/preferences_service.dart';
@@ -45,11 +46,12 @@ class NandayDependencyInjector {
         .map<TwitchChatCommandService>((injector) => TwitchChatCommandServiceImpl(injector.get(), injector.get(), injector.get(), injector.get()), isSingleton: true)
         .map<TwitchFollowerPoller>((injector) => TwitchFollowerPollerImpl(injector.get(), injector.get(), injector.get(), injector.get()), isSingleton: true)
         .map<TwitchThanker>((injector) => TwitchThankerImpl(injector.get(), injector.get()), isSingleton: true)
+        .map<SoundService>((injector) => SoundServiceImpl(injector.get(), injector.get()), isSingleton: true)
     // VIEW MODELS //
       // Login //
         .map<LoginPageViewModel>((injector) => LoginPageViewModel(injector.get()))
       // Main page //
-        .map((injector) => MainPageViewModel(injector.get(), injector.get(), injector.get(), injector.get(), injector.get(), injector.get(), injector.get(), injector.get(), injector.get()))
+        .map((injector) => MainPageViewModel(injector.get(), injector.get(), injector.get(), injector.get(), injector.get(), injector.get(), injector.get(), injector.get(), injector.get(), injector.get()))
         .mapWithParams((injector, additionalParameters) => ChatMessageViewModel(injector.get(), additionalParameters[ChatMessageViewModel.chatMessageParamName]))
       // Broadcast messages //
         .map<BroadcastMessagesViewModel>((injector) => BroadcastMessagesViewModel(injector.get(), injector.get()));

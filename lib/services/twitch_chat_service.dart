@@ -28,11 +28,13 @@ abstract class TwitchChatService {
 }
 
 class TwitchChatMessage {
-  TwitchChatMessage(this.author, this.message, this.id);
+  TwitchChatMessage(this.author, this.message, this.id, this.isFromStreamer, this.isFromStreamerBot);
 
   final String author;
   final String message;
   final String id;
+  final bool isFromStreamer;
+  final bool isFromStreamerBot;
 }
 
 class TwitchChatServiceImpl implements TwitchChatService {
@@ -104,7 +106,7 @@ class TwitchChatServiceImpl implements TwitchChatService {
     return true;
   }
 
-  void _parseChannelStreamMessages(event) {
+  void _parseChannelStreamMessages(event) async {
     String channelMessage = event as String;
 
     Iterable<String> messages = LineSplitter.split(channelMessage);
@@ -126,7 +128,10 @@ class TwitchChatServiceImpl implements TwitchChatService {
         case 'PRIVMSG':
           String author = parsedMessage.prefix.split('!')[0];
           String id = parsedMessage.tags['id'];
-          TwitchChatMessage chatMessage = TwitchChatMessage(author, parsedMessage.params[1], id);
+          TwitchKeys twitchKeys = await _keysReader.getTwitchKeys();
+          bool isFromStreamer = author == twitchKeys.channelName;
+          bool isFromStreamerBot = author == twitchKeys.botUsername;
+          TwitchChatMessage chatMessage = TwitchChatMessage(author, parsedMessage.params[1], id, isFromStreamer, isFromStreamerBot);
           _eventService.chatMessageReceived(chatMessage);
           break;
 

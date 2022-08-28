@@ -23,11 +23,11 @@ Currently running on Windows only. Planning to add MacOS, and maybe Linux, later
   - [x] "!what" to get to know what the streamer is doing today
     - [x] add a way for the streamer to edit the "!what" content response
   - [x] "!time": get local time in the streamer's time zone
-- [ ] Sounds
-  - [ ] Soft sound when someone writes a message in the chat
-  - [ ] When someone subscribes
-  - [ ] When someone follows
-  - [ ] When someone raids
+- [x] Sounds
+  - [x] Soft sound when someone writes a message in the chat
+  - [x] When someone subscribes
+  - [x] When someone follows
+  - [x] When someone raids
 
 ### Features on hold
 
@@ -39,6 +39,7 @@ Currently running on Windows only. Planning to add MacOS, and maybe Linux, later
 - [ ] Evaluate raid size when someone raids: saying "Wow, a lot of people!" in the chat could be sarcastic!
 - [x] Broadcast messages should be sent by the BroadcastService, not the TwitchChatService
 - [ ] Event when bot is connected / disconnected
+- [ ] Switch just audio dependency with something more stable
 
 ### Other aspects
 
@@ -47,7 +48,7 @@ Currently running on Windows only. Planning to add MacOS, and maybe Linux, later
 ### Bugs to fix
 
 - [x] Double broadcast messages
-- [ ] Bot shouldn't greet myself or itself
+- [x] Bot shouldn't greet myself or itself
 
 ## Building the app
 

@@ -54,6 +54,9 @@ dependencies:
   http: ^0.13.5
   # Date and time #
   intl: ^0.17.0
+  # Audio #
+  just_audio: ^0.9.28
+  just_audio_windows: ^0.1.0
 
 dev_dependencies:
   flutter_test:
@@ -80,6 +83,7 @@ flutter:
   assets:
     - assets/keys/
     - assets/html/
+    - assets/sounds/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

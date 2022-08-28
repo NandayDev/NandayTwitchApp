@@ -58,6 +58,10 @@ class TwitchChatCommandServiceImpl implements TwitchChatCommandService {
           break;
 
         case 'editcmd':
+          if (false == chatMessage.isFromStreamer) {
+            answer = 'You\'re not authorized to edit commands.';
+            break;
+          }
           List<String>? otherParts = match.group(2)?.split(' ');
           if (otherParts != null && otherParts.isNotEmpty) {
             switch(otherParts[0]) {

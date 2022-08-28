@@ -2,6 +2,7 @@ import 'package:nanday_twitch_app/models/twitch_notification.dart';
 import 'package:nanday_twitch_app/services/broadcast_messages_service.dart';
 import 'package:nanday_twitch_app/services/event_service.dart';
 import 'package:nanday_twitch_app/services/preferences_service.dart';
+import 'package:nanday_twitch_app/services/sound_service.dart';
 import 'package:nanday_twitch_app/services/text_to_speech_service.dart';
 import 'package:nanday_twitch_app/services/twitch_authentication_service.dart';
 import 'package:nanday_twitch_app/services/twitch_chat_command_service.dart';
@@ -12,7 +13,7 @@ import 'package:nanday_twitch_app/ui/base/nanday_view_model.dart';
 
 class MainPageViewModel extends NandayViewModel {
   MainPageViewModel(this._twitchChatService, this._twitchChatCommandService, this._broadcastMessagesService, this._authenticationService,
-      this._textToSpeechService, this._preferencesService, this._twitchThanker, this._twitchFollowerPoller, this._eventService);
+      this._textToSpeechService, this._preferencesService, this._twitchThanker, this._twitchFollowerPoller, this._eventService, this._soundService);
 
   final List<TwitchChatMessage> chatMessages = [];
   bool isLoading = true;
@@ -28,10 +29,12 @@ class MainPageViewModel extends NandayViewModel {
   final PreferencesService _preferencesService;
   final TwitchThanker _twitchThanker;
   final TwitchFollowerPoller _twitchFollowerPoller;
+  final SoundService _soundService;
   final EventService _eventService;
 
   void initialize() async {
     _twitchChatCommandService.initialize();
+    _soundService.initialize();
     _twitchThanker.initialize();
     _twitchFollowerPoller.initialize();
     await _initializeTwitchChat();
