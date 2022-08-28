@@ -22,9 +22,9 @@ class SoundServiceImpl implements SoundService {
   @override
   void initialize() {
     _eventService.subscribeToChatMessageReceivedEvent((chatMessage) {
-      // if (false == chatMessage.isFromStreamer && false == chatMessage.isFromStreamerBot) {
+      if (false == chatMessage.isFromStreamer && false == chatMessage.isFromStreamerBot) {
         _playFile(_Sound.NEW_MESSAGE);
-      // }
+      }
     });
 
     _eventService.subscribeToNotificationReceivedEvent((notification) {
