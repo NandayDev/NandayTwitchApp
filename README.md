@@ -17,14 +17,16 @@ Currently running on Windows only. Planning to add MacOS, and maybe Linux, later
 - [x] Sends periodic messages to the chat with some predefined messages (such as "Subscribe!" or similar)
   - [x] Add a textbox to choose how many seconds should pass between each predefined message
 - [x] Thanks new subscribers
-- [ ] Thanks new followers
+- [x] Thanks new followers
 - [x] Says "Hi!" to new people joining the chat
-- [ ] Custom commands
-  - [ ] "!what" to get to know what the streamer is doing today
-  - [ ] "!time": get local time in the streamer's time zone
+- [x] Custom commands
+  - [x] "!what" to get to know what the streamer is doing today
+    - [x] add a way for the streamer to edit the "!what" content response
+  - [x] "!time": get local time in the streamer's time zone
 - [ ] Sounds
   - [ ] Soft sound when someone writes a message in the chat
   - [ ] When someone subscribes
+  - [ ] When someone follows
   - [ ] When someone raids
 
 ### Features on hold
@@ -45,6 +47,7 @@ Currently running on Windows only. Planning to add MacOS, and maybe Linux, later
 ### Bugs to fix
 
 - [x] Double broadcast messages
+- [ ] Bot shouldn't greet myself or itself
 
 ## Building the app
 

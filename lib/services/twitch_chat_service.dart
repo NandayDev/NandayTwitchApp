@@ -20,13 +20,19 @@ abstract class TwitchChatService {
   /// Sends a message to Twitch chat
   ///
   Future<bool> sendChatMessage(String message);
+
+  ///
+  /// Answers to a specific message in chat
+  ///
+  Future<bool> answerChatMessage(TwitchChatMessage originalMessage, String answerMessage);
 }
 
 class TwitchChatMessage {
-  TwitchChatMessage(this.author, this.message);
+  TwitchChatMessage(this.author, this.message, this.id);
 
   final String author;
   final String message;
+  final String id;
 }
 
 class TwitchChatServiceImpl implements TwitchChatService {
@@ -88,6 +94,16 @@ class TwitchChatServiceImpl implements TwitchChatService {
     return true;
   }
 
+  @override
+  Future<bool> answerChatMessage(TwitchChatMessage originalMessage, String answerMessage) async {
+    if (channel == null) {
+      return false;
+    }
+    TwitchKeys twitchKeys = await _keysReader.getTwitchKeys();
+    channel!.sink.add('@reply-parent-msg-id=${originalMessage.id} PRIVMSG #${twitchKeys.channelName} :$answerMessage');
+    return true;
+  }
+
   void _parseChannelStreamMessages(event) {
     String channelMessage = event as String;
 
@@ -109,7 +125,8 @@ class TwitchChatServiceImpl implements TwitchChatService {
 
         case 'PRIVMSG':
           String author = parsedMessage.prefix.split('!')[0];
-          TwitchChatMessage chatMessage = TwitchChatMessage(author, parsedMessage.params[1]);
+          String id = parsedMessage.tags['id'];
+          TwitchChatMessage chatMessage = TwitchChatMessage(author, parsedMessage.params[1], id);
           _eventService.chatMessageReceived(chatMessage);
           break;
 

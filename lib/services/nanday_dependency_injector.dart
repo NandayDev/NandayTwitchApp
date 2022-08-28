@@ -42,7 +42,7 @@ class NandayDependencyInjector {
         .map<PreferencesService>((injector) => PreferencesServiceImpl(), isSingleton: true)
         .map<BroadcastMessagesService>((injector) => BroadcastMessagesServiceImpl(injector.get(), injector.get(), injector.get(), injector.get()), isSingleton: true)
         .map<LoggerService>((injector) => LoggerServiceImpl(), isSingleton: true)
-        .map<TwitchChatCommandService>((injector) => TwitchChatCommandServiceImpl(injector.get(), injector.get()), isSingleton: true)
+        .map<TwitchChatCommandService>((injector) => TwitchChatCommandServiceImpl(injector.get(), injector.get(), injector.get(), injector.get()), isSingleton: true)
         .map<TwitchFollowerPoller>((injector) => TwitchFollowerPollerImpl(injector.get(), injector.get(), injector.get(), injector.get()), isSingleton: true)
         .map<TwitchThanker>((injector) => TwitchThankerImpl(injector.get(), injector.get()), isSingleton: true)
     // VIEW MODELS //

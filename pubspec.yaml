@@ -52,6 +52,8 @@ dependencies:
   shared_preferences: ^2.0.15
   # HTTP calls #
   http: ^0.13.5
+  # Date and time #
+  intl: ^0.17.0
 
 dev_dependencies:
   flutter_test:

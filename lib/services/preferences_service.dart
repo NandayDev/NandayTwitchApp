@@ -22,6 +22,12 @@ abstract class PreferencesService {
   Future<String> getTextToSpeechLanguage(String defaultValue);
 
   Future<bool> setTextToSpeechLanguage(String value);
+
+  // Content of "!what" command //
+
+  Future<String> getWhatCommandContent(String defaultValue);
+
+  Future<bool> setWhatCommandContent(String value);
 }
 
 class PreferencesServiceImpl implements PreferencesService {
@@ -60,6 +66,16 @@ class PreferencesServiceImpl implements PreferencesService {
     return _setString(_KEY_CHOSEN_LANGUAGE, value);
   }
 
+  @override
+  Future<String> getWhatCommandContent(String defaultValue) {
+    return _getString(_KEY_WHAT_COMMAND, defaultValue);
+  }
+
+  @override
+  Future<bool> setWhatCommandContent(String value) {
+    return _setString(_KEY_WHAT_COMMAND, value);
+  }
+
   Future<SharedPreferences> _getSharedPreferences() async {
     _prefs ??= await SharedPreferences.getInstance();
     return _prefs!;
@@ -90,4 +106,7 @@ class PreferencesServiceImpl implements PreferencesService {
   static const String _KEY_BROADCAST_MESSAGES = "broadcast_messages";
   static const String _KEY_BROADCAST_DELAY_SECONDS = "seconds_between_broadcast_messages";
   static const int _DEFAULT_BROADCAST_DELAY_SECONDS = 60 * 5;
+  static const String _KEY_WHAT_COMMAND = "what_command";
+
+
 }
