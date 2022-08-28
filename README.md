@@ -33,9 +33,10 @@ Currently running on Windows only. Planning to add MacOS, and maybe Linux, later
 
 ### Improvements
 
-- [ ] Creating a centralized event center for notifications to the app components
+- [x] Creating a centralized event center for notifications to the app components
 - [ ] Evaluate raid size when someone raids: saying "Wow, a lot of people!" in the chat could be sarcastic!
-- [ ] Broadcast messages should be sent by the BroadcastService, not the TwitchChatService
+- [x] Broadcast messages should be sent by the BroadcastService, not the TwitchChatService
+- [ ] Event when bot is connected / disconnected
 
 ### Other aspects
 

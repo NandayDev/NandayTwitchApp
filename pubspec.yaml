@@ -48,8 +48,10 @@ dependencies:
   provider: ^6.0.3
   # Text To Speech #
   flutter_tts: ^3.5.0
-  # Key-value preferences
+  # Key-value preferences #
   shared_preferences: ^2.0.15
+  # HTTP calls #
+  http: ^0.13.5
 
 dev_dependencies:
   flutter_test:

@@ -122,7 +122,7 @@ class TwitchChatServiceImpl implements TwitchChatService {
               break;
 
             case 'resub':
-              notificationType = TwitchNotificationType.RESUSCRIBE;
+              notificationType = TwitchNotificationType.RESUBSCRIBE;
               break;
 
             case 'raid':

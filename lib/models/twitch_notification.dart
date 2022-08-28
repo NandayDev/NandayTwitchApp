@@ -9,8 +9,9 @@ class TwitchNotification {
 }
 
 enum TwitchNotificationType {
+  NEW_FOLLOWER,
   SUBSCRIBE,
-  RESUSCRIBE,
+  RESUBSCRIBE,
   SUBSCRIPTION_GIFT,
   SUBSCRIPTION_GIFT_ANON,
   RAID
