@@ -1,7 +1,7 @@
 
 // ignore_for_file: constant_identifier_names
 
-import 'package:just_audio/just_audio.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:nanday_twitch_app/models/twitch_notification.dart';
 import 'package:nanday_twitch_app/services/event_service.dart';
 import 'package:nanday_twitch_app/services/logger_service.dart';
@@ -22,9 +22,9 @@ class SoundServiceImpl implements SoundService {
   @override
   void initialize() {
     _eventService.subscribeToChatMessageReceivedEvent((chatMessage) {
-      if (false == chatMessage.isFromStreamer && false == chatMessage.isFromStreamerBot) {
+      // if (false == chatMessage.isFromStreamer && false == chatMessage.isFromStreamerBot) {
         _playFile(_Sound.NEW_MESSAGE);
-      }
+      // }
     });
 
     _eventService.subscribeToNotificationReceivedEvent((notification) {
@@ -65,9 +65,14 @@ class SoundServiceImpl implements SoundService {
 
     if (fileName != null) {
       _logger.d('Playing $fileName');
-      await _player.setAsset('assets/sounds/$fileName');
-      await _player.stop();
-      await _player.play();
+      try {
+        await _player.stop();
+      } catch (e) {}
+      try {
+        await _player.play(AssetSource('sounds/$fileName'));
+      } catch (e) {
+        _logger.e('Couldn\'t play sound $fileName: $e');
+      }
     }
   }
 
