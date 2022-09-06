@@ -80,7 +80,7 @@ class TwitchChatServiceImpl implements TwitchChatService {
         await Future.delayed(const Duration(milliseconds: 100));
       }
 
-      sendChatMessage("NaNDayDev Bot is alive!");
+      sendChatMessage("Hi everyone! My name is ${twitchKeys.botUsername} and I'm here to disturb your stream.");
     }
 
     return _connectedSuccessfully == null ? false : _connectedSuccessfully!;
