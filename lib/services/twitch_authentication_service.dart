@@ -3,6 +3,7 @@ import 'package:nanday_twitch_app/services/twitch_keys_reader.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:url_launcher/url_launcher.dart';
+import 'dart:io';
 
 abstract class TwitchAuthenticationService {
   ///
@@ -58,7 +59,11 @@ class TwitchAuthenticationServiceImpl implements TwitchAuthenticationService {
           'scope': scopes.join(' '),
         },
     );
-    await launchUrl(url);
+    if (keys.browserExecutable != null) {
+      await Process.run(keys.browserExecutable!, [ url.toString() ]);
+    } else {
+      await launchUrl(url);
+    }
 
     int retries = 0;
 
