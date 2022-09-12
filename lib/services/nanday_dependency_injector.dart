@@ -35,25 +35,25 @@ class NandayDependencyInjector {
     Injector injector = Injector();
     return injector
     // SERVICES //
-        .map<EventService>((injector) => EventServiceImpl(), isSingleton: true)
-        .map<TwitchKeysReader>((injector) => TwitchKeysReader(), isSingleton: true)
-        .map<TwitchAuthenticationService>((injector) => TwitchAuthenticationServiceImpl(injector.get()), isSingleton: true)
-        .map<TwitchChatService>((injector) => TwitchChatServiceImpl(injector.get(), injector.get(), injector.get()), isSingleton: true)
-        .map<TextToSpeechService>((injector) => TextToSpeechService(), isSingleton: true)
-        .map<PreferencesService>((injector) => PreferencesServiceImpl(), isSingleton: true)
-        .map<BroadcastMessagesService>((injector) => BroadcastMessagesServiceImpl(injector.get(), injector.get(), injector.get(), injector.get()), isSingleton: true)
-        .map<LoggerService>((injector) => LoggerServiceImpl(), isSingleton: true)
-        .map<TwitchChatCommandService>((injector) => TwitchChatCommandServiceImpl(injector.get(), injector.get(), injector.get(), injector.get()), isSingleton: true)
-        .map<TwitchFollowerPoller>((injector) => TwitchFollowerPollerImpl(injector.get(), injector.get(), injector.get(), injector.get()), isSingleton: true)
-        .map<TwitchThanker>((injector) => TwitchThankerImpl(injector.get(), injector.get()), isSingleton: true)
-        .map<SoundService>((injector) => SoundServiceImpl(injector.get(), injector.get()), isSingleton: true)
+        .map<EventService>((i) => EventServiceImpl(), isSingleton: true)
+        .map<TwitchKeysReader>((i) => TwitchKeysReader(), isSingleton: true)
+        .map<TwitchAuthenticationService>((i) => TwitchAuthenticationServiceImpl(i.get()), isSingleton: true)
+        .map<TwitchChatService>((i) => TwitchChatServiceImpl(i.get(), i.get(), i.get(), i.get()), isSingleton: true)
+        .map<TextToSpeechService>((i) => TextToSpeechService(), isSingleton: true)
+        .map<PreferencesService>((i) => PreferencesServiceImpl(), isSingleton: true)
+        .map<BroadcastMessagesService>((i) => BroadcastMessagesServiceImpl(i.get(), i.get(), i.get(), i.get()), isSingleton: true)
+        .map<LoggerService>((i) => LoggerServiceImpl(), isSingleton: true)
+        .map<TwitchChatCommandService>((i) => TwitchChatCommandServiceImpl(i.get(), i.get(), i.get(), i.get()), isSingleton: true)
+        .map<TwitchFollowerPoller>((i) => TwitchFollowerPollerImpl(i.get(), i.get(), i.get(), i.get()), isSingleton: true)
+        .map<TwitchThanker>((i) => TwitchThankerImpl(i.get(), i.get()), isSingleton: true)
+        .map<SoundService>((i) => SoundServiceImpl(i.get(), i.get()), isSingleton: true)
     // VIEW MODELS //
       // Login //
-        .map<LoginPageViewModel>((injector) => LoginPageViewModel(injector.get()))
+        .map<LoginPageViewModel>((i) => LoginPageViewModel(i.get(), i.get()))
       // Main page //
-        .map((injector) => MainPageViewModel(injector.get(), injector.get(), injector.get(), injector.get(), injector.get(), injector.get(), injector.get(), injector.get(), injector.get(), injector.get()))
-        .mapWithParams((injector, additionalParameters) => ChatMessageViewModel(injector.get(), additionalParameters[ChatMessageViewModel.chatMessageParamName]))
+        .map((i) => MainPageViewModel(i.get(), i.get(), i.get(), i.get(), i.get(), i.get(), i.get(), i.get(), i.get()))
+        .mapWithParams((i, additionalParameters) => ChatMessageViewModel(i.get(), additionalParameters[ChatMessageViewModel.chatMessageParamName]))
       // Broadcast messages //
-        .map<BroadcastMessagesViewModel>((injector) => BroadcastMessagesViewModel(injector.get(), injector.get()));
+        .map<BroadcastMessagesViewModel>((i) => BroadcastMessagesViewModel(i.get(), i.get()));
   }
 }

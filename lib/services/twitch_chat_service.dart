@@ -7,6 +7,7 @@ import 'package:nanday_twitch_app/services/broadcast_messages_service.dart';
 import 'package:nanday_twitch_app/services/event_service.dart';
 import 'package:nanday_twitch_app/services/logger_service.dart';
 import 'package:nanday_twitch_app/services/preferences_service.dart';
+import 'package:nanday_twitch_app/services/twitch_authentication_service.dart';
 import 'package:nanday_twitch_app/services/twitch_keys_reader.dart';
 import 'package:web_socket_channel/io.dart';
 
@@ -14,7 +15,7 @@ abstract class TwitchChatService {
   ///
   /// Attempts to connect to the Twitch channel
   ///
-  Future<bool> connect(String accessToken);
+  Future<bool> connect();
 
   ///
   /// Sends a message to Twitch chat
@@ -38,18 +39,21 @@ class TwitchChatMessage {
 }
 
 class TwitchChatServiceImpl implements TwitchChatService {
-  TwitchChatServiceImpl(this._keysReader, this._logger, this._eventService);
+  TwitchChatServiceImpl(this._keysReader, this._logger, this._eventService, this._authenticationService);
 
   final TwitchKeysReader _keysReader;
   final LoggerService _logger;
   final EventService _eventService;
+  final TwitchAuthenticationService _authenticationService;
 
   bool? _connectedSuccessfully, _joinedRoomSuccessfully;
+  bool _sentHelloMessage = false;
+  DateTime? _lastPingPongTime = null;
 
   IOWebSocketChannel? channel;
 
   @override
-  Future<bool> connect(String accessToken) async {
+  Future<bool> connect() async {
     if (_connectedSuccessfully == true) {
       return true;
     }
@@ -62,7 +66,7 @@ class TwitchChatServiceImpl implements TwitchChatService {
     channel!.stream.listen(_parseChannelStreamMessages);
 
     channel!.sink.add('CAP REQ :twitch.tv/membership twitch.tv/tags twitch.tv/commands');
-    channel!.sink.add('PASS oauth:$accessToken');
+    channel!.sink.add('PASS oauth:${_authenticationService.accessToken!}');
     channel!.sink.add('NICK ${twitchKeys.botUsername}');
 
     int retries = 0;
@@ -79,8 +83,15 @@ class TwitchChatServiceImpl implements TwitchChatService {
         retries++;
         await Future.delayed(const Duration(milliseconds: 100));
       }
+      
+      if (!_sentHelloMessage) {
+        _sentHelloMessage = true;
+        sendChatMessage("Hi everyone! My name is ${twitchKeys.botUsername} and I'm here to disturb your stream.");
+      }
+    }
 
-      sendChatMessage("Hi everyone! My name is ${twitchKeys.botUsername} and I'm here to disturb your stream.");
+    if (_connectedSuccessfully == true) {
+      _startPingPongLoop();
     }
 
     return _connectedSuccessfully == null ? false : _connectedSuccessfully!;
@@ -123,6 +134,11 @@ class TwitchChatServiceImpl implements TwitchChatService {
       switch (parsedMessage.command) {
         case 'PING':
           channel!.sink.add('PONG :tmi.twitch.tv');
+          _lastPingPongTime = DateTime.now();
+          break;
+
+        case 'PONG':
+          _lastPingPongTime = DateTime.now();
           break;
 
         case 'PRIVMSG':
@@ -182,6 +198,27 @@ class TwitchChatServiceImpl implements TwitchChatService {
             _connectedSuccessfully = false;
           }
           break;
+      }
+    }
+  }
+
+  void _startPingPongLoop() async {
+    _lastPingPongTime = DateTime.now();
+    while (true) {
+      await Future.delayed(const Duration(minutes: 5));
+      DateTime expectedLastPingPong = DateTime.now().subtract(const Duration(minutes: 5));
+      DateTime last = _lastPingPongTime!;
+      if (_lastPingPongTime!.isBefore(expectedLastPingPong)) {
+        _logger.d("Attempting to send PING");
+        channel!.sink.add('PING :tmi.twitch.tv');
+        await Future.delayed(const Duration(seconds: 10));
+        if (_lastPingPongTime == last) {
+          // Channel disconnected? //
+          _logger.w("No PING PONG: probably disconnected");
+          _connectedSuccessfully = null;
+          _joinedRoomSuccessfully = null;
+          connect();
+        }
       }
     }
   }

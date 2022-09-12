@@ -1,15 +1,19 @@
 import 'dart:convert';
 
 import 'package:nanday_twitch_app/constants.dart';
+import 'package:nanday_twitch_app/services/logger_service.dart';
 import 'package:nanday_twitch_app/services/twitch_authentication_service.dart';
 import 'package:nanday_twitch_app/ui/base/nanday_view_model.dart';
 
 
 class LoginPageViewModel extends NandayViewModel {
 
-  LoginPageViewModel(this._authenticationService);
+  LoginPageViewModel(this._authenticationService, this._loggerService) {
+    _loggerService.initializeFile();
+  }
 
   final TwitchAuthenticationService _authenticationService;
+  final LoggerService _loggerService;
 
   ///
   /// Authenticates with Twitch backend to get an auth token

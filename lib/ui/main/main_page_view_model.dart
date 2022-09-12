@@ -12,7 +12,7 @@ import 'package:nanday_twitch_app/services/twitch_thanker.dart';
 import 'package:nanday_twitch_app/ui/base/nanday_view_model.dart';
 
 class MainPageViewModel extends NandayViewModel {
-  MainPageViewModel(this._twitchChatService, this._twitchChatCommandService, this._broadcastMessagesService, this._authenticationService,
+  MainPageViewModel(this._twitchChatService, this._twitchChatCommandService, this._broadcastMessagesService,
       this._textToSpeechService, this._preferencesService, this._twitchThanker, this._twitchFollowerPoller, this._eventService, this._soundService);
 
   final List<TwitchChatMessage> chatMessages = [];
@@ -24,7 +24,6 @@ class MainPageViewModel extends NandayViewModel {
   final TwitchChatService _twitchChatService;
   final TwitchChatCommandService _twitchChatCommandService;
   final BroadcastMessagesService _broadcastMessagesService;
-  final TwitchAuthenticationService _authenticationService;
   final TextToSpeechService _textToSpeechService;
   final PreferencesService _preferencesService;
   final TwitchThanker _twitchThanker;
@@ -56,7 +55,7 @@ class MainPageViewModel extends NandayViewModel {
   }
 
   Future _initializeTwitchChat() async {
-    await _twitchChatService.connect(_authenticationService.accessToken!);
+    await _twitchChatService.connect();
     isLoading = false;
     notifyListeners();
 
