@@ -48,7 +48,7 @@ class TwitchChatServiceImpl implements TwitchChatService {
 
   bool? _connectedSuccessfully, _joinedRoomSuccessfully;
   bool _sentHelloMessage = false;
-  DateTime? _lastPingPongTime = null;
+  DateTime? _lastPingPongTime;
 
   IOWebSocketChannel? channel;
 
@@ -205,8 +205,8 @@ class TwitchChatServiceImpl implements TwitchChatService {
   void _startPingPongLoop() async {
     _lastPingPongTime = DateTime.now();
     while (true) {
-      await Future.delayed(const Duration(minutes: 5));
-      DateTime expectedLastPingPong = DateTime.now().subtract(const Duration(minutes: 5));
+      await Future.delayed(const Duration(minutes: 1));
+      DateTime expectedLastPingPong = DateTime.now().subtract(const Duration(minutes: 1));
       DateTime last = _lastPingPongTime!;
       if (_lastPingPongTime!.isBefore(expectedLastPingPong)) {
         _logger.d("Attempting to send PING");
@@ -218,6 +218,7 @@ class TwitchChatServiceImpl implements TwitchChatService {
           _connectedSuccessfully = null;
           _joinedRoomSuccessfully = null;
           connect();
+          return;
         }
       }
     }
