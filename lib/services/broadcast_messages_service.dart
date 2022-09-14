@@ -1,7 +1,7 @@
 import 'package:nanday_twitch_app/constants.dart';
 import 'package:nanday_twitch_app/services/event_service.dart';
 import 'package:nanday_twitch_app/services/logger_service.dart';
-import 'package:nanday_twitch_app/services/preferences_service.dart';
+import 'package:nanday_twitch_app/services/persistent_storage_service.dart';
 import 'package:nanday_twitch_app/services/twitch_chat_service.dart';
 
 abstract class BroadcastMessagesService {
@@ -13,7 +13,7 @@ class BroadcastMessagesServiceImpl implements BroadcastMessagesService {
   BroadcastMessagesServiceImpl(this._twitchChatService, this._preferencesService, this._eventService, this._logger);
 
   final TwitchChatService _twitchChatService;
-  final PreferencesService _preferencesService;
+  final PersistentStorageService _preferencesService;
   final EventService _eventService;
   final LoggerService _logger;
   List<String> _broadcastMessages = [];

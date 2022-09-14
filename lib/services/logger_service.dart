@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:intl/date_symbol_data_file.dart';
 import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
+import 'package:nanday_twitch_app/constants.dart';
 import 'dart:io';
 
 import 'package:path_provider/path_provider.dart';
@@ -46,8 +47,8 @@ class LoggerServiceImpl implements LoggerService {
 
   @override
   void initializeFile() async {
-    var directory = await getApplicationDocumentsDirectory();
-    _logFile = File("${directory.path}\\${_dateFormat.format(DateTime.now())}.log");
+    var directory = await getApplicationDataDirectory();
+    _logFile = File("$directory\\${_dateFormat.format(DateTime.now())}.log");
 
     await _writeToFile("-----------------------");
 

@@ -6,7 +6,20 @@ A desktop application to handle my Twitch channel and automate some stuff.
 
 Currently running on Windows only. Planning to add MacOS, and maybe Linux, later during the development.
 
-## Features
+## Features to add
+
+- [ ] "Multiprofile": possibility to login with a profile and use that
+- [ ] "Epic quotes"
+  - [ ] Saving
+  - [ ] Displaying
+- [ ] Sound effects playing, with the possibility to add more
+- [ ] Currency system
+
+### Other aspects
+
+- [ ] Security?
+
+### Completed Features
 
 - [x] Authentication:
   - [x] with Twitch APIs
@@ -38,12 +51,9 @@ Currently running on Windows only. Planning to add MacOS, and maybe Linux, later
 - [x] Creating a centralized event center for notifications to the app components
 - [x] Evaluate raid size when someone raids: saying "Wow, a lot of people!" in the chat could be sarcastic!
 - [x] Broadcast messages should be sent by the BroadcastService, not the TwitchChatService
-- [ ] Event when bot is connected / disconnected
 - [x] Switch just_audio dependency with something more stable
 
-### Other aspects
 
-- [ ] Security?
 
 ### Bugs to fix
 

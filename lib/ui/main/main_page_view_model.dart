@@ -1,7 +1,7 @@
 import 'package:nanday_twitch_app/models/twitch_notification.dart';
 import 'package:nanday_twitch_app/services/broadcast_messages_service.dart';
 import 'package:nanday_twitch_app/services/event_service.dart';
-import 'package:nanday_twitch_app/services/preferences_service.dart';
+import 'package:nanday_twitch_app/services/persistent_storage_service.dart';
 import 'package:nanday_twitch_app/services/sound_service.dart';
 import 'package:nanday_twitch_app/services/text_to_speech_service.dart';
 import 'package:nanday_twitch_app/services/twitch_authentication_service.dart';
@@ -25,7 +25,7 @@ class MainPageViewModel extends NandayViewModel {
   final TwitchChatCommandService _twitchChatCommandService;
   final BroadcastMessagesService _broadcastMessagesService;
   final TextToSpeechService _textToSpeechService;
-  final PreferencesService _preferencesService;
+  final PersistentStorageService _preferencesService;
   final TwitchThanker _twitchThanker;
   final TwitchFollowerPoller _twitchFollowerPoller;
   final SoundService _soundService;

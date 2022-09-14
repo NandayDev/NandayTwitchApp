@@ -4,7 +4,7 @@ import 'package:nanday_twitch_app/services/event_service.dart';
 import 'package:nanday_twitch_app/services/sound_service.dart';
 import 'package:nanday_twitch_app/services/twitch_chat_command_service.dart';
 import 'package:nanday_twitch_app/services/logger_service.dart';
-import 'package:nanday_twitch_app/services/preferences_service.dart';
+import 'package:nanday_twitch_app/services/persistent_storage_service.dart';
 import 'package:nanday_twitch_app/services/text_to_speech_service.dart';
 import 'package:nanday_twitch_app/services/twitch_authentication_service.dart';
 import 'package:nanday_twitch_app/services/twitch_chat_service.dart';
@@ -40,7 +40,7 @@ class NandayDependencyInjector {
         .map<TwitchAuthenticationService>((i) => TwitchAuthenticationServiceImpl(i.get()), isSingleton: true)
         .map<TwitchChatService>((i) => TwitchChatServiceImpl(i.get(), i.get(), i.get(), i.get()), isSingleton: true)
         .map<TextToSpeechService>((i) => TextToSpeechService(), isSingleton: true)
-        .map<PreferencesService>((i) => PreferencesServiceImpl(), isSingleton: true)
+        .map<PersistentStorageService>((i) => PersistentStorageServiceImpl(i.get()), isSingleton: true)
         .map<BroadcastMessagesService>((i) => BroadcastMessagesServiceImpl(i.get(), i.get(), i.get(), i.get()), isSingleton: true)
         .map<LoggerService>((i) => LoggerServiceImpl(), isSingleton: true)
         .map<TwitchChatCommandService>((i) => TwitchChatCommandServiceImpl(i.get(), i.get(), i.get(), i.get()), isSingleton: true)

@@ -6,7 +6,7 @@ import 'package:nanday_twitch_app/models/twitch_notification.dart';
 import 'package:nanday_twitch_app/services/broadcast_messages_service.dart';
 import 'package:nanday_twitch_app/services/event_service.dart';
 import 'package:nanday_twitch_app/services/logger_service.dart';
-import 'package:nanday_twitch_app/services/preferences_service.dart';
+import 'package:nanday_twitch_app/services/persistent_storage_service.dart';
 import 'package:nanday_twitch_app/services/twitch_authentication_service.dart';
 import 'package:nanday_twitch_app/services/twitch_keys_reader.dart';
 import 'package:web_socket_channel/io.dart';

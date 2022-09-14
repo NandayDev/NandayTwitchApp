@@ -2,7 +2,7 @@ import 'dart:collection';
 
 import 'package:intl/intl.dart';
 import 'package:nanday_twitch_app/services/event_service.dart';
-import 'package:nanday_twitch_app/services/preferences_service.dart';
+import 'package:nanday_twitch_app/services/persistent_storage_service.dart';
 import 'package:nanday_twitch_app/services/twitch_chat_service.dart';
 import 'package:nanday_twitch_app/services/twitch_keys_reader.dart';
 
@@ -15,7 +15,7 @@ class TwitchChatCommandServiceImpl implements TwitchChatCommandService {
 
   final EventService _eventService;
   final TwitchChatService _twitchChatService;
-  final PreferencesService _preferencesService;
+  final PersistentStorageService _preferencesService;
   final TwitchKeysReader _twitchKeysReader;
 
   final HashSet<String> _greetedUsers = HashSet();

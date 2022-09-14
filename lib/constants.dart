@@ -1,5 +1,7 @@
 // ignore_for_file: constant_identifier_names
 
+import 'package:path_provider/path_provider.dart';
+
 class Constants {
   static const String REDIRECT_HOST = "localhost";
   static const int API_REDIRECT_PORT = 12893;
@@ -11,7 +13,18 @@ class Constants {
 
   static const String BROADCAST_MESSAGES_SEPARATOR = '###*###';
 
-  // static const String API_REDIRECT_URI = "http://$REDIRECT_HOST:$API_REDIRECT_PORT";
+
+
+ // static const String API_REDIRECT_URI = "http://$REDIRECT_HOST:$API_REDIRECT_PORT";
   // static const String CHAT_REDIRECT_URI = "http://$REDIRECT_HOST:$CHAT_REDIRECT_PORT";
 
+}
+
+String? _applicationDataDirectory;
+Future<String> getApplicationDataDirectory() async {
+  if (_applicationDataDirectory == null) {
+    var directory = await getLibraryDirectory();
+    _applicationDataDirectory = "${directory.path}\\NandayTwitchBot";
+  }
+  return _applicationDataDirectory!;
 }

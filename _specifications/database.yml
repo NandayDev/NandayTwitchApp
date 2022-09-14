@@ -1,0 +1,16 @@
+Table 'profiles':
+- 'id' primary key auto generated
+- 'channel_name': text not null
+- 'bot_username': text not null
+- 'browser_executable': text nullable
+
+Table 'broadcast_messages':
+- 'id' primary key auto generated
+- 'profile_id': foreign key
+- 'text': text not null
+
+Table 'settings':
+- 'id' primary key auto generated
+- 'profile_id': foreign key
+- 'key': text not null
+- 'value': text not null

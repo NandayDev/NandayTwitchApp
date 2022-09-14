@@ -1,14 +1,14 @@
 import 'package:nanday_twitch_app/constants.dart';
 import 'package:nanday_twitch_app/services/broadcast_messages_service.dart';
 import 'package:nanday_twitch_app/services/event_service.dart';
-import 'package:nanday_twitch_app/services/preferences_service.dart';
+import 'package:nanday_twitch_app/services/persistent_storage_service.dart';
 import 'package:nanday_twitch_app/ui/base/nanday_view_model.dart';
 
 class BroadcastMessagesViewModel extends NandayViewModel {
   BroadcastMessagesViewModel(this._eventService, this._preferencesService);
 
   final EventService _eventService;
-  final PreferencesService _preferencesService;
+  final PersistentStorageService _preferencesService;
 
   final List<String> messages = [];
   bool isLoading = true;
