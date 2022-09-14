@@ -11,12 +11,11 @@ abstract class TwitchChatCommandService {
 }
 
 class TwitchChatCommandServiceImpl implements TwitchChatCommandService {
-  TwitchChatCommandServiceImpl(this._twitchChatService, this._eventService, this._preferencesService, this._twitchKeysReader);
+  TwitchChatCommandServiceImpl(this._twitchChatService, this._eventService, this._storageService);
 
   final EventService _eventService;
   final TwitchChatService _twitchChatService;
-  final PersistentStorageService _preferencesService;
-  final TwitchKeysReader _twitchKeysReader;
+  final PersistentStorageService _storageService;
 
   final HashSet<String> _greetedUsers = HashSet();
 
@@ -26,9 +25,8 @@ class TwitchChatCommandServiceImpl implements TwitchChatCommandService {
 
   @override
   void initialize() async {
-    TwitchKeys keys = await _twitchKeysReader.getTwitchKeys();
-    _greetedUsers.add(keys.channelName);
-    _greetedUsers.add(keys.botUsername);
+    _greetedUsers.add(_storageService.currentProfile!.channelName);
+    _greetedUsers.add(_storageService.currentProfile!.botUsername);
     _eventService.subscribeToChatMessageReceivedEvent((chatMessage) async {
       await _handleCommandIfPresent(chatMessage);
 
@@ -45,7 +43,7 @@ class TwitchChatCommandServiceImpl implements TwitchChatCommandService {
       String? answer;
       switch (match.group(1)) {
         case 'what':
-          answer = await _preferencesService.getWhatCommandContent('');
+          answer = await _storageService.getWhatCommandContent('');
           if (answer.isEmpty) {
             answer = 'Sorry, "what" message not set. Ask the streamer to set it via !editcmd';
           }
@@ -66,7 +64,7 @@ class TwitchChatCommandServiceImpl implements TwitchChatCommandService {
             switch (otherParts[0]) {
               case 'what':
                 String whatCommandContent = chatMessage.message.substring(14);
-                if (await _preferencesService.setWhatCommandContent(whatCommandContent)) {
+                if (await _storageService.setWhatCommandContent(whatCommandContent)) {
                   answer = 'Command successfully set!';
                 }
                 break;

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:nanday_twitch_app/models/profile.dart';
+import 'package:nanday_twitch_app/models/result.dart';
 import 'package:nanday_twitch_app/services/nanday_dependency_injector.dart';
 import 'package:nanday_twitch_app/ui/login/login_page_view_model.dart';
 import 'package:nanday_twitch_app/ui/main/main_page.dart';
@@ -13,57 +15,84 @@ class LoginPage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<LoginPage> {
-  bool loading = true;
 
   @override
   void initState() {
     super.initState();
-    _tryLogin();
+    Provider.of<LoginPageViewModel>(context, listen: false)
+        .getProfiles();
   }
 
   @override
   Widget build(BuildContext context) {
+    LoginPageViewModel viewModel = Provider.of<LoginPageViewModel>(context);
+    if (viewModel.authenticationResult != null) {
+      EmptyResult<String> authenticationResult = viewModel.authenticationResult!;
+      if (authenticationResult.hasError) {
+        showDialog(
+            context: context,
+            barrierDismissible: false, // user must tap button!
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text('Authentication failed'),
+                content: SingleChildScrollView(
+                  child: ListBody(
+                    children:[
+                      Text(authenticationResult.error!),
+                    ],
+                  ),
+                ),
+                actions: <Widget>[
+                  TextButton(
+                    child: const Text('Ok'),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              );
+            });
+      } else {
+        // Goes to main page //
+        Navigator.pop(context);
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => ChangeNotifierProvider(
+                create: (context) => NandayDependencyInjector.instance.resolve<MainPageViewModel>(),
+                child: const MainPage(),
+              )),
+        );
+      }
+    }
     return Scaffold(
       appBar: AppBar(
         title: const Text("Login"),
       ),
-      body: loading
-          ? const Center(child: CircularProgressIndicator())
-          : Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  TextButton(
-                      onPressed: () {
-                        _tryLogin();
-                      },
-                      child: const Text("LOGIN")),
-                ],
-              ),
-            ),
-    );
-  }
+      body: Center(child: Column(children: [
+        DropdownButton<Profile>(
+          value: viewModel.selectedProfile,
+          icon: const Icon(Icons.arrow_downward),
+          elevation: 16,
+          style: const TextStyle(color: Colors.deepPurple),
+          underline: Container(
+            height: 2,
+            color: Colors.deepPurpleAccent,
+          ),
+          onChanged: (Profile? newValue) {
+            viewModel.selectedProfile = newValue;
+          },
+          items: viewModel.profiles.map<DropdownMenuItem<Profile>>((Profile profile) {
+            return DropdownMenuItem<Profile>(child: Text('${profile.channelName} | ${profile.botUsername}'));
+          }).toList(),
+        ),
 
-  void _tryLogin() async {
-    setState(() {
-      loading = true;
-    });
-    bool authenticated = await Provider.of<LoginPageViewModel>(context, listen: false).authenticate();
-    if (authenticated) {
-      Navigator.pop(context);
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => ChangeNotifierProvider(
-                  create: (context) => NandayDependencyInjector.instance.resolve<MainPageViewModel>(),
-                  child: const MainPage(),
-                )),
-      );
-      return;
-    }
-    setState(() {
-      // TODO show error
-      loading = false;
-    });
+        MaterialButton(
+            onPressed: viewModel.isLoginButtonEnabled ? () {
+              viewModel.authenticate();
+        } : null,
+        child : const Text('LOGIN'))
+      ],))
+    );
   }
 }

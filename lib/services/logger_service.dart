@@ -1,17 +1,12 @@
 import 'dart:collection';
-import 'dart:ui';
+import 'dart:io';
 
-import 'package:intl/date_symbol_data_file.dart';
 import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
 import 'package:nanday_twitch_app/constants.dart';
-import 'dart:io';
-
-import 'package:path_provider/path_provider.dart';
 
 abstract class LoggerService {
-
-  void initializeFile();
+  Future ensureInitialized();
 
   ///
   /// Logs a debug message
@@ -39,25 +34,21 @@ class LoggerServiceImpl implements LoggerService {
     printer: PrettyPrinter(),
   );
 
-  late File _logFile;
+  File? _logFile;
   final _dateFormat = DateFormat("yyyyMMdd", null);
   final _timeFormat = DateFormat.yMd().add_jm();
 
   final Queue<String> _logQueue = Queue();
 
   @override
-  void initializeFile() async {
-    var directory = await getApplicationDataDirectory();
-    _logFile = File("$directory\\${_dateFormat.format(DateTime.now())}.log");
+  Future ensureInitialized() async {
+    if (_logFile == null) {
+      var directory = await getApplicationDataDirectory();
+      _logFile = File("$directory\\${_dateFormat.format(DateTime.now())}.log");
 
-    await _writeToFile("-----------------------");
+      await _writeToFile("-----------------------");
 
-    while (true) {
-      while (_logQueue.isNotEmpty) {
-        String log = _logQueue.removeFirst();
-        await _writeToFile(log);
-      }
-      await Future.delayed(const Duration(milliseconds: 500));
+      _startLogLoop();
     }
   }
 
@@ -85,11 +76,21 @@ class LoggerServiceImpl implements LoggerService {
     _addToQueue("ERROR", message);
   }
 
+  void _startLogLoop() async {
+    while (true) {
+      while (_logQueue.isNotEmpty) {
+        String log = _logQueue.removeFirst();
+        await _writeToFile(log);
+      }
+      await Future.delayed(const Duration(milliseconds: 500));
+    }
+  }
+
   void _addToQueue(String prefix, String message) {
     _logQueue.addLast("$prefix - ${_timeFormat.format(DateTime.now())} - $message");
   }
 
   Future _writeToFile(String logMessage) {
-    return _logFile.writeAsString(logMessage + "\n", mode: FileMode.append);
+    return _logFile!.writeAsString(logMessage + "\n", mode: FileMode.append);
   }
 }

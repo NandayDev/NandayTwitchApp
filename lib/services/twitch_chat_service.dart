@@ -39,12 +39,12 @@ class TwitchChatMessage {
 }
 
 class TwitchChatServiceImpl implements TwitchChatService {
-  TwitchChatServiceImpl(this._keysReader, this._logger, this._eventService, this._authenticationService);
+  TwitchChatServiceImpl(this._logger, this._eventService, this._authenticationService, this._storageService);
 
-  final TwitchKeysReader _keysReader;
   final LoggerService _logger;
   final EventService _eventService;
   final TwitchAuthenticationService _authenticationService;
+  final PersistentStorageService _storageService;
 
   bool? _connectedSuccessfully, _joinedRoomSuccessfully;
   bool _sentHelloMessage = false;
@@ -59,7 +59,6 @@ class TwitchChatServiceImpl implements TwitchChatService {
     }
 
     final webSocket = await WebSocket.connect('ws://irc-ws.chat.twitch.tv:80');
-    TwitchKeys twitchKeys = await _keysReader.getTwitchKeys();
 
     channel = IOWebSocketChannel(webSocket);
 
@@ -67,7 +66,7 @@ class TwitchChatServiceImpl implements TwitchChatService {
 
     channel!.sink.add('CAP REQ :twitch.tv/membership twitch.tv/tags twitch.tv/commands');
     channel!.sink.add('PASS oauth:${_authenticationService.accessToken!}');
-    channel!.sink.add('NICK ${twitchKeys.botUsername}');
+    channel!.sink.add('NICK ${_storageService.currentProfile!.botUsername}');
 
     int retries = 0;
 
@@ -77,7 +76,7 @@ class TwitchChatServiceImpl implements TwitchChatService {
     }
 
     if (_connectedSuccessfully == true) {
-      channel!.sink.add('JOIN #${twitchKeys.channelName}');
+      channel!.sink.add('JOIN #${_storageService.currentProfile!.channelName}');
 
       while (_joinedRoomSuccessfully == null && retries < 240) {
         retries++;
@@ -86,7 +85,7 @@ class TwitchChatServiceImpl implements TwitchChatService {
       
       if (!_sentHelloMessage) {
         _sentHelloMessage = true;
-        sendChatMessage("Hi everyone! My name is ${twitchKeys.botUsername} and I'm here to disturb your stream.");
+        sendChatMessage("Hi everyone! My name is ${_storageService.currentProfile!.botUsername} and I'm here to disturb your stream.");
       }
     }
 
@@ -102,8 +101,7 @@ class TwitchChatServiceImpl implements TwitchChatService {
     if (channel == null) {
       return false;
     }
-    TwitchKeys twitchKeys = await _keysReader.getTwitchKeys();
-    channel!.sink.add('PRIVMSG #${twitchKeys.channelName} :$message');
+    channel!.sink.add('PRIVMSG #${_storageService.currentProfile!.channelName} :$message');
     return true;
   }
 
@@ -112,8 +110,7 @@ class TwitchChatServiceImpl implements TwitchChatService {
     if (channel == null) {
       return false;
     }
-    TwitchKeys twitchKeys = await _keysReader.getTwitchKeys();
-    channel!.sink.add('@reply-parent-msg-id=${originalMessage.id} PRIVMSG #${twitchKeys.channelName} :$answerMessage');
+    channel!.sink.add('@reply-parent-msg-id=${originalMessage.id} PRIVMSG #${_storageService.currentProfile!.channelName} :$answerMessage');
     return true;
   }
 
@@ -144,9 +141,8 @@ class TwitchChatServiceImpl implements TwitchChatService {
         case 'PRIVMSG':
           String author = parsedMessage.prefix.split('!')[0];
           String id = parsedMessage.tags['id'];
-          TwitchKeys twitchKeys = await _keysReader.getTwitchKeys();
-          bool isFromStreamer = author == twitchKeys.channelName;
-          bool isFromStreamerBot = author == twitchKeys.botUsername;
+          bool isFromStreamer = author == _storageService.currentProfile!.channelName;
+          bool isFromStreamerBot = author == _storageService.currentProfile!.botUsername;
           TwitchChatMessage chatMessage = TwitchChatMessage(author, parsedMessage.params[1], id, isFromStreamer, isFromStreamerBot);
           _eventService.chatMessageReceived(chatMessage);
           break;

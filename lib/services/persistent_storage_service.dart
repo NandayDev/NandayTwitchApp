@@ -1,9 +1,10 @@
-// ignore_for_file: constant_identifier_names
+// ignore_for_file: constant_identifier_names, prefer_conditional_assignment
 
 import 'package:nanday_twitch_app/constants.dart';
 import 'package:nanday_twitch_app/models/profile.dart';
 import 'package:nanday_twitch_app/services/logger_service.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 abstract class PersistentStorageService {
   /// Returns all profiles from the persistent storage
@@ -48,6 +49,14 @@ class PersistentStorageServiceImpl implements PersistentStorageService {
   PersistentStorageServiceImpl(this._loggerService);
 
   final LoggerService _loggerService;
+  Map<String, String>? __settingsCache;
+
+  Future<Map<String,String>> get _settingsCache async {
+    if (__settingsCache == null) {
+      __settingsCache = await _initializeSettingsCache();
+    }
+    return __settingsCache!;
+  }
 
   @override
   Profile? currentProfile;
@@ -151,7 +160,6 @@ class PersistentStorageServiceImpl implements PersistentStorageService {
   @override
   Future<bool> setTextToSpeechLanguage(String value) {
     return _setSetting(_SETTING_KEY_TTS_LANGUAGE, value);
-
   }
 
   @override
@@ -163,8 +171,9 @@ class PersistentStorageServiceImpl implements PersistentStorageService {
 
   Future<Database> _getDatabase() async {
     if (_database == null) {
-      String databasePath = (await getApplicationDataDirectory()) + "\\nanday.db";
-      _database = await openDatabase(databasePath, version: 1, onCreate: (db, version) {
+      sqfliteFfiInit();
+      String databasePath = (await getApplicationDataDirectory()) + "\\nanday.ndb";
+      _database = await databaseFactoryFfi.openDatabase(databasePath, options: OpenDatabaseOptions(version: 1, onCreate: (db, version) {
         return db.execute('CREATE TABLE $_PROFILES_TABLE_NAME('
             '$_PROFILE_ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,'
             '$_PROFILE_CHANNEL_NAME TEXT NOT NULL,'
@@ -181,7 +190,7 @@ class PersistentStorageServiceImpl implements PersistentStorageService {
             '$_SETTING_VALUE TEXT NOT NULL,'
             'PRIMARY KEY ($_SETTING_PROFILE_ID, $_SETTING_KEY),'
             'FOREIGN KEY($_SETTING_PROFILE_ID) REFERENCES $_PROFILES_TABLE_NAME($_PROFILE_ID));');
-      });
+      }));
     }
     return _database!;
   }
@@ -205,14 +214,8 @@ class PersistentStorageServiceImpl implements PersistentStorageService {
   }
 
   Future<String?> _getSetting(String settingKey) async {
-    Database database = await _getDatabase();
-    var queryResults = await database.query(_SETTINGS_TABLE_NAME,
-        columns: [_SETTING_VALUE], where: '$_SETTING_PROFILE_ID = ${currentProfile!.id} AND $_SETTING_KEY = $settingKey', limit: 1);
-    if (queryResults.isEmpty) {
-      return null;
-    }
-
-    return queryResults[0][_SETTING_VALUE] as String;
+    Map<String, String> cache = await _settingsCache;
+    return cache.containsKey(settingKey) ? cache[settingKey] : null;
   }
 
   Future<String> _getStringSetting(String settingKey, String defaultValue) async {
@@ -233,11 +236,22 @@ class PersistentStorageServiceImpl implements PersistentStorageService {
             _SETTING_VALUE: settingValue
           },
           conflictAlgorithm: ConflictAlgorithm.replace);
+      __settingsCache?[settingKey] = settingValue;
       return true;
     } catch (e) {
       _loggerService.e("Failed setting save: $e");
     }
     return false;
+  }
+
+  Future<Map<String, String>> _initializeSettingsCache() async {
+    Database database = await _getDatabase();
+    var queryResults = await database.query(_SETTINGS_TABLE_NAME, where: '$_SETTING_PROFILE_ID = ${currentProfile!.id}');
+    Map<String, String> settings = {};
+    for (var queryResult in queryResults) {
+      settings[queryResult[_SETTING_KEY] as String] = queryResult[_SETTING_VALUE] as String;
+    }
+    return settings;
   }
 
   static const String _PROFILES_TABLE_NAME = "profiles";
@@ -261,5 +275,6 @@ class PersistentStorageServiceImpl implements PersistentStorageService {
   static const String _SETTING_KEY_WHAT_COMMAND_CONTENT = "what_command_content";
 
   static const int _DEFAULT_BROADCAST_DELAY_SECONDS = 60 * 5;
+
 
 }

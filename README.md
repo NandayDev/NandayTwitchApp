@@ -14,6 +14,8 @@ Currently running on Windows only. Planning to add MacOS, and maybe Linux, later
   - [ ] Displaying
 - [ ] Sound effects playing, with the possibility to add more
 - [ ] Currency system
+- [ ] List of users following my stream
+  - [ ] Bots should be in a separate list (https://twitchinsights.net/bots)
 
 ### Other aspects
 

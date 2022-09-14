@@ -1,24 +1,23 @@
 import 'dart:collection';
 import 'dart:convert';
-import 'dart:io';
 
+import 'package:http/http.dart' as http;
 import 'package:nanday_twitch_app/models/twitch_notification.dart';
 import 'package:nanday_twitch_app/services/event_service.dart';
 import 'package:nanday_twitch_app/services/logger_service.dart';
+import 'package:nanday_twitch_app/services/persistent_storage_service.dart';
 import 'package:nanday_twitch_app/services/twitch_authentication_service.dart';
 import 'package:nanday_twitch_app/services/twitch_keys_reader.dart';
-import 'package:http/http.dart' as http;
 
 abstract class TwitchFollowerPoller {
-
   void initialize();
 }
 
 class TwitchFollowerPollerImpl implements TwitchFollowerPoller {
-
-  TwitchFollowerPollerImpl(this._twitchKeysReader, this._authenticationService, this._loggerService, this._eventService);
+  TwitchFollowerPollerImpl(this._twitchKeysReader, this._storageService, this._authenticationService, this._loggerService, this._eventService);
 
   final TwitchKeysReader _twitchKeysReader;
+  final PersistentStorageService _storageService;
   final TwitchAuthenticationService _authenticationService;
   final LoggerService _loggerService;
   final EventService _eventService;
@@ -28,9 +27,9 @@ class TwitchFollowerPollerImpl implements TwitchFollowerPoller {
   void initialize() async {
     Duration pollIntervalDuration = const Duration(seconds: 5);
     TwitchKeys keys = await _twitchKeysReader.getTwitchKeys();
-    Map<String, String> headers = { 'Authorization' : 'Bearer ${_authenticationService.accessToken!}', 'Client-Id' : keys.applicationClientId };
+    Map<String, String> headers = {'Authorization': 'Bearer ${_authenticationService.accessToken!}', 'Client-Id': keys.applicationClientId};
 
-    int? userId = await _getUserId(keys.channelName, headers);
+    int? userId = await _getUserId(_storageService.currentProfile!.channelName, headers);
     if (userId == null) {
       return;
     }
@@ -64,7 +63,7 @@ class TwitchFollowerPollerImpl implements TwitchFollowerPoller {
     return null;
   }
 
-  Future _pollUsersFollowsEndpoint(Uri getUsersFollowsEndpoint, Map<String,String> headers, bool notifyNewFollower) async {
+  Future _pollUsersFollowsEndpoint(Uri getUsersFollowsEndpoint, Map<String, String> headers, bool notifyNewFollower) async {
     try {
       http.Response response = await http.get(getUsersFollowsEndpoint, headers: headers);
       dynamic responseJson = jsonDecode(response.body);

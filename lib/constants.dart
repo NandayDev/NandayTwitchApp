@@ -1,5 +1,7 @@
 // ignore_for_file: constant_identifier_names
 
+import 'dart:io';
+
 import 'package:path_provider/path_provider.dart';
 
 class Constants {
@@ -23,8 +25,10 @@ class Constants {
 String? _applicationDataDirectory;
 Future<String> getApplicationDataDirectory() async {
   if (_applicationDataDirectory == null) {
-    var directory = await getLibraryDirectory();
+   // var directory = await getApplicationSupportDirectory();
+    var directory = await getApplicationDocumentsDirectory();
     _applicationDataDirectory = "${directory.path}\\NandayTwitchBot";
+    await Directory(_applicationDataDirectory!).create(recursive: true);
   }
   return _applicationDataDirectory!;
 }

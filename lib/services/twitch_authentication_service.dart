@@ -1,4 +1,5 @@
 import 'package:flutter/services.dart';
+import 'package:nanday_twitch_app/services/persistent_storage_service.dart';
 import 'package:nanday_twitch_app/services/twitch_keys_reader.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart' as shelf_io;
@@ -19,9 +20,10 @@ abstract class TwitchAuthenticationService {
 
 class TwitchAuthenticationServiceImpl implements TwitchAuthenticationService {
 
-  TwitchAuthenticationServiceImpl(this._twitchKeysReader);
+  TwitchAuthenticationServiceImpl(this._twitchKeysReader, this._storageService);
 
   final TwitchKeysReader _twitchKeysReader;
+  final PersistentStorageService _storageService;
 
   @override
   Future<TwitchAuthenticationResult> authenticate(int redirectPort, List<String> scopes) async {
@@ -59,8 +61,9 @@ class TwitchAuthenticationServiceImpl implements TwitchAuthenticationService {
           'scope': scopes.join(' '),
         },
     );
-    if (keys.browserExecutable != null) {
-      await Process.run(keys.browserExecutable!, [ url.toString() ]);
+    String? browserExecutable = _storageService.currentProfile!.browserExecutable;
+    if (browserExecutable != null) {
+      await Process.run(browserExecutable, [ url.toString() ]);
     } else {
       await launchUrl(url);
     }
@@ -93,4 +96,6 @@ class TwitchAuthenticationResult {
 
   final String? token;
   final String? error;
+
+  bool get hasError { return error != null; }
 }
