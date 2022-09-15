@@ -16,6 +16,7 @@ Currently running on Windows only. Planning to add MacOS, and maybe Linux, later
 - [ ] Currency system
 - [ ] List of users following my stream
   - [ ] Bots should be in a separate list (https://twitchinsights.net/bots)
+- [ ] Possibility to add custom commands with predefined answers from the bot
 
 ### Other aspects
 
