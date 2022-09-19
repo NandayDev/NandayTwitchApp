@@ -11,7 +11,7 @@ abstract class PersistentStorageService {
   Future<List<Profile>> getProfiles();
 
   /// Adds or edits given profile in the persistent storage
-  Future<bool> addOrEditProfile(Profile profile);
+  Future<bool> createOrEditProfile(Profile profile);
 
   /// Deletes given profile in the persistent storage
   Future<bool> deleteProfile(Profile profile);
@@ -62,7 +62,7 @@ class PersistentStorageServiceImpl implements PersistentStorageService {
   Profile? currentProfile;
 
   @override
-  Future<bool> addOrEditProfile(Profile profile) async {
+  Future<bool> createOrEditProfile(Profile profile) async {
     try {
       Map<String, dynamic> profileMap = _convertProfileToMap(profile);
       Database database = await _getDatabase();
@@ -209,7 +209,7 @@ class PersistentStorageServiceImpl implements PersistentStorageService {
 
   Profile _convertMapToProfile(Map<String, Object?> queryResult) {
     return Profile(queryResult[_PROFILE_BOT_USERNAME] as String, queryResult[_PROFILE_CHANNEL_NAME] as String,
-        queryResult.containsKey(_PROFILE_BROWSER_EXECUTABLE) ? queryResult[_PROFILE_BROWSER_EXECUTABLE] as String : null,
+        queryResult.containsKey(_PROFILE_BROWSER_EXECUTABLE) ? queryResult[_PROFILE_BROWSER_EXECUTABLE] as String? : null,
         id: queryResult.containsKey(_PROFILE_ID) ? queryResult[_PROFILE_ID] as int : null);
   }
 

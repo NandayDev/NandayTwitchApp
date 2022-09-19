@@ -26,7 +26,9 @@ class LoginPageViewModel extends NandayViewModel {
   Profile? get selectedProfile { return _selectedProfile; }
   set selectedProfile (Profile? profile) {
     _selectedProfile = profile;
-    isLoginButtonEnabled = profile != null;
+    notifyPropertyChanged(() {
+      isLoginButtonEnabled = profile != null;
+    });
   }
 
   EmptyResult<String>? _authenticationResult;
@@ -38,7 +40,7 @@ class LoginPageViewModel extends NandayViewModel {
 
     notifyPropertyChanged(() {
       isLoading = false;
-      selectedProfile = profiles.isNotEmpty ? profiles[0] : null;
+      //selectedProfile = profiles.isNotEmpty ? profiles[0] : null;
       isLoginButtonEnabled = selectedProfile != null;
     });
   }

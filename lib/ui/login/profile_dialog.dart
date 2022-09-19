@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nanday_twitch_app/models/profile.dart';
 import 'package:nanday_twitch_app/ui/login/profile_dialog_view_model.dart';
+import 'package:nanday_twitch_app/utilities/AlertDialogUtility.dart';
 import 'package:provider/provider.dart';
 
 class ProfileDialog extends StatefulWidget {
@@ -13,51 +14,71 @@ class ProfileDialog extends StatefulWidget {
 }
 
 class _ProfileDialogState extends State<ProfileDialog> {
-
   @override
   Widget build(BuildContext context) {
     ProfileDialogViewModel viewModel = Provider.of<ProfileDialogViewModel>(context);
-    TextEditingController botUsernameTextController = TextEditingController(viewModel.)
+    TextEditingController botUsernameTextController = TextEditingController(text: viewModel.botUsername);
+    TextEditingController channelNameTextController = TextEditingController(text: viewModel.channelName);
+    bool? profileSavedSuccessfully = viewModel.profileSavedSuccessfully;
+    switch(profileSavedSuccessfully) {
+      case true:
+        Navigator.of(context).pop();
+        // TODO notify the login page a profile was changed
+        return Container();
+
+      case false:
+        AlertDialogUtility.showTextDialog(context, "Profile couldn't be saved. Please try again.");
+        break;
+    }
     return AlertDialog(
-      title: const Text("Set broadcast messages here 👇"),
-      content: viewModel.isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Column(children: [
-        SizedBox(
-            width: 400.0,
-            height: 400.0,
-            child: TextField()),
+      title: Text(widget.profile == null ? "Create new profile" : "Edit profile"),
+      content: Column(mainAxisSize: MainAxisSize.min, children: [
+        const SizedBox(width: 400, height: 0,),
         Row(
           children: [
+            const Text("Bot username *"),
+            const SizedBox(
+              width: 20,
+            ),
             SizedBox(
-                width: 50.0,
-                child: TextField(
-                    controller: broadcastDelayController,
-                    decoration: InputDecoration(errorText: _broadcastDelayHasError ? "Wrong input" : null))),
-            IconButton(
-              onPressed: () {
-                viewModel.addNewMessage();
-              },
-              icon: const Icon(Icons.add),
-            )
+              width: 250.0,
+              child: TextField(
+              controller: botUsernameTextController,
+                onChanged: (newText) {
+                  viewModel.botUsername = newText;
+                  setState(() {
+
+                  });
+                },
+            ))
+          ],
+        ),
+        const SizedBox(
+          height: 20,
+        ),
+        Row(
+          children: [
+            const Text("Channel name *"),
+            const SizedBox(
+              width: 20,
+            ),
+            SizedBox(
+              width: 250.0,
+              child: TextField(
+              controller: channelNameTextController,
+                onChanged: (newText) {
+                  viewModel.channelName = newText;
+                  setState(() {
+
+                  });
+                },
+            ))
           ],
         )
       ]),
       actions: [
         TextButton(
-            onPressed: () async {
-              if (false == viewModel.isSaveButtonEnabled) {
-                return;
-              }
-              if (false == await viewModel.saveBroadcastDelay(broadcastDelayController.text)) {
-                setState(() {
-                  _broadcastDelayHasError = true;
-                });
-                return;
-              }
-              await viewModel.saveMessages();
-              Navigator.of(context).pop();
-            },
+            onPressed: viewModel.isSaveButtonEnabled ? viewModel.saveProfile : null,
             child: const Text("Save")),
         TextButton(
             onPressed: () {

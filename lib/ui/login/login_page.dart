@@ -3,6 +3,8 @@ import 'package:nanday_twitch_app/models/profile.dart';
 import 'package:nanday_twitch_app/models/result.dart';
 import 'package:nanday_twitch_app/services/nanday_dependency_injector.dart';
 import 'package:nanday_twitch_app/ui/login/login_page_view_model.dart';
+import 'package:nanday_twitch_app/ui/login/profile_dialog.dart';
+import 'package:nanday_twitch_app/ui/login/profile_dialog_view_model.dart';
 import 'package:nanday_twitch_app/ui/main/main_page.dart';
 import 'package:nanday_twitch_app/ui/main/main_page_view_model.dart';
 import 'package:provider/provider.dart';
@@ -73,12 +75,12 @@ class _MyHomePageState extends State<LoginPage> {
           children: [
             SizedBox(
                 width: 200.0,
-                height: 100.0,
+                height: 50.0,
                 child: DropdownButton<Profile>(
                   value: viewModel.selectedProfile,
                   icon: const Icon(Icons.arrow_downward),
                   elevation: 16,
-                  style: const TextStyle(color: Colors.deepPurple),
+                  style: const TextStyle(fontSize: 20, color: Colors.deepPurple),
                   underline: Container(
                     height: 2,
                     color: Colors.deepPurpleAccent,
@@ -108,7 +110,7 @@ class _MyHomePageState extends State<LoginPage> {
               children: [
                 TextButton(
                     onPressed: () {
-                      // TODO
+                      showProfileDialog();
                     },
                     child: const Text("Create new profile", style: textButtonFontStyle,)),
                 viewModel.selectedProfile == null
@@ -118,7 +120,7 @@ class _MyHomePageState extends State<LoginPage> {
                           const Text("  |  "),
                           TextButton(
                               onPressed: () {
-                                // TODO
+                                showProfileDialog(profile: viewModel.selectedProfile);
                               },
                               child: const Text("Edit profile", style: textButtonFontStyle))
                         ],
@@ -127,5 +129,19 @@ class _MyHomePageState extends State<LoginPage> {
             )
           ],
         )));
+  }
+
+  void showProfileDialog({Profile? profile}) async {
+    await showDialog(context: context, builder: (BuildContext context) {
+      return ChangeNotifierProvider(
+        create: (context) => NandayDependencyInjector.instance
+            .resolve<ProfileDialogViewModel>(additionalParameters: {ProfileDialogViewModel.profileParamName: profile}),
+        child: ProfileDialog(profile: profile),
+      );
+    });
+    // Reloads profiles once the showDialog future is completed //
+    Provider
+        .of<LoginPageViewModel>(context, listen: false)
+        .getProfiles();
   }
 }

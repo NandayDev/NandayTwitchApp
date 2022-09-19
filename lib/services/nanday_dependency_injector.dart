@@ -12,6 +12,7 @@ import 'package:nanday_twitch_app/services/twitch_follower_poller.dart';
 import 'package:nanday_twitch_app/services/twitch_keys_reader.dart';
 import 'package:nanday_twitch_app/services/twitch_thanker.dart';
 import 'package:nanday_twitch_app/ui/login/login_page_view_model.dart';
+import 'package:nanday_twitch_app/ui/login/profile_dialog_view_model.dart';
 import 'package:nanday_twitch_app/ui/main/broadcast_messages_dialog/broadcast_messages_view_model.dart';
 import 'package:nanday_twitch_app/ui/main/chat_message_view_model.dart';
 import 'package:nanday_twitch_app/ui/main/main_page_view_model.dart';
@@ -54,8 +55,10 @@ class NandayDependencyInjector {
         .map<LoginPageViewModel>((i) => LoginPageViewModel(i.get(), i.get(), i.get()))
         // Main page //
         .map((i) => MainPageViewModel(i.get(), i.get(), i.get(), i.get(), i.get(), i.get(), i.get(), i.get(), i.get()))
-        .mapWithParams((i, additionalParameters) => ChatMessageViewModel(i.get(), additionalParameters[ChatMessageViewModel.chatMessageParamName]))
+        .mapWithParams<ChatMessageViewModel>((i, additionalParameters) => ChatMessageViewModel(i.get(), additionalParameters[ChatMessageViewModel.chatMessageParamName]))
         // Broadcast messages //
-        .map<BroadcastMessagesViewModel>((i) => BroadcastMessagesViewModel(i.get(), i.get()));
+        .map<BroadcastMessagesViewModel>((i) => BroadcastMessagesViewModel(i.get(), i.get()))
+        // Profile //
+        .mapWithParams<ProfileDialogViewModel>((i, params) => ProfileDialogViewModel(i.get(), params[ProfileDialogViewModel.profileParamName]));
   }
 }
