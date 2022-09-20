@@ -8,7 +8,7 @@ Currently running on Windows only. Planning to add MacOS, and maybe Linux, later
 
 ## Features to add
 
-- [ ] "Multiprofile": possibility to login with a profile and use that
+- [x] "Multiprofile": possibility to login with a profile and use that
 - [ ] "Epic quotes"
   - [ ] Saving
   - [ ] Displaying

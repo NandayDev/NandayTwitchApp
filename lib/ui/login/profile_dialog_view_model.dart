@@ -25,21 +25,21 @@ class ProfileDialogViewModel extends NandayViewModel {
   String get botUsername { return _botUsername; }
   set botUsername (String value) {
     _botUsername = value;
-    // TODO
+    notifyPropertyChanged(null);
   }
 
   late String _channelName;
   String get channelName { return _channelName; }
   set channelName (String value) {
     _channelName = value;
-    // TODO
+    notifyPropertyChanged(null);
   }
 
   String? _browserExecutablePath;
   String? get browserExecutablePath { return _browserExecutablePath; }
   set browserExecutablePath (String? value) {
     _browserExecutablePath = value;
-    // TODO
+    notifyPropertyChanged(null);
   }
 
   void saveProfile() async {

@@ -1,3 +1,4 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:nanday_twitch_app/models/profile.dart';
 import 'package:nanday_twitch_app/ui/login/profile_dialog_view_model.dart';
@@ -14,13 +15,23 @@ class ProfileDialog extends StatefulWidget {
 }
 
 class _ProfileDialogState extends State<ProfileDialog> {
+
+  late TextEditingController _botUsernameTextController;
+  late TextEditingController _channelNameTextController;
+
+  @override
+  void initState() {
+    super.initState();
+    ProfileDialogViewModel viewModel = Provider.of<ProfileDialogViewModel>(context, listen: false);
+    _botUsernameTextController = TextEditingController(text: viewModel.botUsername);
+    _channelNameTextController = TextEditingController(text: viewModel.channelName);
+  }
+
   @override
   Widget build(BuildContext context) {
     ProfileDialogViewModel viewModel = Provider.of<ProfileDialogViewModel>(context);
-    TextEditingController botUsernameTextController = TextEditingController(text: viewModel.botUsername);
-    TextEditingController channelNameTextController = TextEditingController(text: viewModel.channelName);
     bool? profileSavedSuccessfully = viewModel.profileSavedSuccessfully;
-    switch(profileSavedSuccessfully) {
+    switch (profileSavedSuccessfully) {
       case true:
         Navigator.of(context).pop();
         // TODO notify the login page a profile was changed
@@ -33,7 +44,10 @@ class _ProfileDialogState extends State<ProfileDialog> {
     return AlertDialog(
       title: Text(widget.profile == null ? "Create new profile" : "Edit profile"),
       content: Column(mainAxisSize: MainAxisSize.min, children: [
-        const SizedBox(width: 400, height: 0,),
+        const SizedBox(
+          width: 400,
+          height: 0,
+        ),
         Row(
           children: [
             const Text("Bot username *"),
@@ -41,16 +55,13 @@ class _ProfileDialogState extends State<ProfileDialog> {
               width: 20,
             ),
             SizedBox(
-              width: 250.0,
-              child: TextField(
-              controller: botUsernameTextController,
-                onChanged: (newText) {
-                  viewModel.botUsername = newText;
-                  setState(() {
-
-                  });
-                },
-            ))
+                width: 250.0,
+                child: TextField(
+                  controller: _botUsernameTextController,
+                  onChanged: (newText) {
+                    viewModel.botUsername = newText;
+                  },
+                ))
           ],
         ),
         const SizedBox(
@@ -63,23 +74,37 @@ class _ProfileDialogState extends State<ProfileDialog> {
               width: 20,
             ),
             SizedBox(
-              width: 250.0,
-              child: TextField(
-              controller: channelNameTextController,
-                onChanged: (newText) {
-                  viewModel.channelName = newText;
-                  setState(() {
-
-                  });
-                },
-            ))
+                width: 250.0,
+                child: TextField(
+                  controller: _channelNameTextController,
+                  onChanged: (newText) {
+                    viewModel.channelName = newText;
+                  },
+                ))
           ],
-        )
+        ),
+        const SizedBox(
+          height: 20,
+        ),
+        Row(children: [
+          const Text("Browser executable *"),
+          const SizedBox(
+            width: 20,
+          ),
+          MaterialButton(child: const Text("..."), onPressed: () async {
+            var result = await FilePicker.platform.pickFiles();
+            if (result?.files.isNotEmpty == true) {
+              viewModel.browserExecutablePath = result!.files[0].path;
+            }
+          }),
+          const SizedBox(
+            width: 20,
+          ),
+          Text(viewModel.browserExecutablePath ?? "")
+        ])
       ]),
       actions: [
-        TextButton(
-            onPressed: viewModel.isSaveButtonEnabled ? viewModel.saveProfile : null,
-            child: const Text("Save")),
+        TextButton(onPressed: viewModel.isSaveButtonEnabled ? viewModel.saveProfile : null, child: const Text("Save")),
         TextButton(
             onPressed: () {
               Navigator.of(context).pop();

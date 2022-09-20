@@ -54,15 +54,17 @@ class _MyHomePageState extends State<LoginPage> {
             });
       } else {
         // Goes to main page //
-        Navigator.pop(context);
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => ChangeNotifierProvider(
-                    create: (context) => NandayDependencyInjector.instance.resolve<MainPageViewModel>(),
-                    child: const MainPage(),
-                  )),
-        );
+        Future.delayed(const Duration(seconds: 1)).then((value) {
+          Navigator.pop(context);
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => ChangeNotifierProvider(
+                      create: (context) => NandayDependencyInjector.instance.resolve<MainPageViewModel>(),
+                      child: const MainPage(),
+                    )),
+          );
+        });
       }
     }
     const TextStyle textButtonFontStyle = TextStyle(fontSize: 18.0);
@@ -72,9 +74,10 @@ class _MyHomePageState extends State<LoginPage> {
         ),
         body: Center(
             child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
             SizedBox(
-                width: 200.0,
+                width: 300.0,
                 height: 50.0,
                 child: DropdownButton<Profile>(
                   value: viewModel.selectedProfile,
@@ -89,21 +92,28 @@ class _MyHomePageState extends State<LoginPage> {
                     viewModel.selectedProfile = newValue;
                   },
                   items: viewModel.profiles.map<DropdownMenuItem<Profile>>((Profile profile) {
-                    return DropdownMenuItem<Profile>(child: Text('${profile.channelName} | ${profile.botUsername}'));
+                    return DropdownMenuItem<Profile>(
+                      child: Text('${profile.channelName} | ${profile.botUsername}'),
+                      value: profile,
+                    );
                   }).toList(),
                 )),
             const SizedBox(
-              height: 20.0,
+              height: 30.0,
             ),
             MaterialButton(
-                onPressed: viewModel.isLoginButtonEnabled
+                color: Theme.of(context).primaryColor,
+                textColor: Colors.white,
+                onPressed: viewModel.isLoginButtonEnabled && !viewModel.isLoading
                     ? () {
                         viewModel.authenticate();
                       }
                     : null,
-                child: const Text('LOGIN', style: textButtonFontStyle)),
+                child: Padding(
+                    padding: EdgeInsets.all(10.0),
+                    child: viewModel.isLoading ? CircularProgressIndicator() : Text('LOGIN', style: TextStyle(fontSize: 20.0)))),
             const SizedBox(
-              height: 20.0,
+              height: 30.0,
             ),
             Row(
               mainAxisSize: MainAxisSize.min,
@@ -112,7 +122,10 @@ class _MyHomePageState extends State<LoginPage> {
                     onPressed: () {
                       showProfileDialog();
                     },
-                    child: const Text("Create new profile", style: textButtonFontStyle,)),
+                    child: const Text(
+                      "Create new profile",
+                      style: textButtonFontStyle,
+                    )),
                 viewModel.selectedProfile == null
                     ? Container()
                     : Row(
@@ -132,16 +145,16 @@ class _MyHomePageState extends State<LoginPage> {
   }
 
   void showProfileDialog({Profile? profile}) async {
-    await showDialog(context: context, builder: (BuildContext context) {
-      return ChangeNotifierProvider(
-        create: (context) => NandayDependencyInjector.instance
-            .resolve<ProfileDialogViewModel>(additionalParameters: {ProfileDialogViewModel.profileParamName: profile}),
-        child: ProfileDialog(profile: profile),
-      );
-    });
+    await showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return ChangeNotifierProvider(
+            create: (context) => NandayDependencyInjector.instance
+                .resolve<ProfileDialogViewModel>(additionalParameters: {ProfileDialogViewModel.profileParamName: profile}),
+            child: ProfileDialog(profile: profile),
+          );
+        });
     // Reloads profiles once the showDialog future is completed //
-    Provider
-        .of<LoginPageViewModel>(context, listen: false)
-        .getProfiles();
+    Provider.of<LoginPageViewModel>(context, listen: false).getProfiles();
   }
 }

@@ -26,6 +26,7 @@ class LoginPageViewModel extends NandayViewModel {
   Profile? get selectedProfile { return _selectedProfile; }
   set selectedProfile (Profile? profile) {
     _selectedProfile = profile;
+    _storageService.currentProfile = profile;
     notifyPropertyChanged(() {
       isLoginButtonEnabled = profile != null;
     });
@@ -40,7 +41,7 @@ class LoginPageViewModel extends NandayViewModel {
 
     notifyPropertyChanged(() {
       isLoading = false;
-      //selectedProfile = profiles.isNotEmpty ? profiles[0] : null;
+      selectedProfile = profiles.isNotEmpty ? profiles[0] : null;
       isLoginButtonEnabled = selectedProfile != null;
     });
   }
@@ -49,7 +50,12 @@ class LoginPageViewModel extends NandayViewModel {
   /// Authenticates with Twitch backend to get an auth token
   ///
   void authenticate() async {
+    notifyPropertyChanged(() {
+      isLoading = true;
+    });
+
     TwitchAuthenticationResult result = await _authenticationService.authenticate(Constants.CHAT_REDIRECT_PORT, Constants.CHAT_SCOPES);
+
     if (result.hasError) {
       notifyPropertyChanged(() {
         _authenticationResult = EmptyResult.withError(error: result.error);
