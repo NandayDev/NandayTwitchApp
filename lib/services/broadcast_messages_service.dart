@@ -6,14 +6,14 @@ import 'package:nanday_twitch_app/services/twitch_chat_service.dart';
 
 abstract class BroadcastMessagesService {
 
-  void initialize();
+  Future initialize();
 }
 
 class BroadcastMessagesServiceImpl implements BroadcastMessagesService {
-  BroadcastMessagesServiceImpl(this._twitchChatService, this._preferencesService, this._eventService, this._logger);
+  BroadcastMessagesServiceImpl(this._twitchChatService, this._storageService, this._eventService, this._logger);
 
   final TwitchChatService _twitchChatService;
-  final PersistentStorageService _preferencesService;
+  final PersistentStorageService _storageService;
   final EventService _eventService;
   final LoggerService _logger;
   List<String> _broadcastMessages = [];
@@ -21,7 +21,7 @@ class BroadcastMessagesServiceImpl implements BroadcastMessagesService {
   bool _isBroadcastMessagesLoopRunning = false;
 
   @override
-  void initialize() {
+  Future initialize() async {
     _updateBroadcastMessages();
 
     _eventService.subscribeToBroadcastMessagesChangedEvent((messages) {
@@ -34,7 +34,7 @@ class BroadcastMessagesServiceImpl implements BroadcastMessagesService {
       return;
     }
 
-    int secondsBetweenMessages = await _preferencesService.getBroadcastDelay();
+    int secondsBetweenMessages = await _storageService.getBroadcastDelay();
     Duration betweenMessagesDuration = Duration(seconds: secondsBetweenMessages);
 
     _isBroadcastMessagesLoopRunning = true;
@@ -62,7 +62,7 @@ class BroadcastMessagesServiceImpl implements BroadcastMessagesService {
   }
 
   Future _updateBroadcastMessages() async {
-    _broadcastMessages = await _preferencesService.getBroadcastMessages();
+    _broadcastMessages = await _storageService.getBroadcastMessages();
     _broadcastMessagesIndex = 0;
     _handleBroadcastMessages();
   }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:nanday_twitch_app/models/profile.dart';
 import 'package:nanday_twitch_app/models/result.dart';
 import 'package:nanday_twitch_app/services/nanday_dependency_injector.dart';
+import 'package:nanday_twitch_app/services/service_initiator.dart';
 import 'package:nanday_twitch_app/ui/login/login_page_view_model.dart';
 import 'package:nanday_twitch_app/ui/login/profile_dialog.dart';
 import 'package:nanday_twitch_app/ui/login/profile_dialog_view_model.dart';
@@ -28,34 +29,34 @@ class _MyHomePageState extends State<LoginPage> {
     LoginPageViewModel viewModel = Provider.of<LoginPageViewModel>(context);
     if (viewModel.authenticationResult != null) {
       EmptyResult<String> authenticationResult = viewModel.authenticationResult!;
-      Future.delayed(const Duration(seconds: 1)).then((value) {
+      // Initializes services after login, then shows the main page //
+      ServiceInitiator.instance.initializeWhenLoggedIn().then((value) {
         if (authenticationResult.hasError) {
           showDialog(
-            context: context,
-            barrierDismissible: false, // user must tap button!
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: const Text('Authentication failed'),
-                content: SingleChildScrollView(
-                  child: ListBody(
-                    children: [
-                      Text(authenticationResult.error!),
-                    ],
+              context: context,
+              barrierDismissible: false, // user must tap button!
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: const Text('Authentication failed'),
+                  content: SingleChildScrollView(
+                    child: ListBody(
+                      children: [
+                        Text(authenticationResult.error!),
+                      ],
+                    ),
                   ),
-                ),
-                actions: <Widget>[
-                  TextButton(
-                    child: const Text('Ok'),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                  ),
-                ],
-              );
-            });
-      } else {
-        // Goes to main page //
-
+                  actions: <Widget>[
+                    TextButton(
+                      child: const Text('Ok'),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  ],
+                );
+              });
+        } else {
+          // Goes to main page //
           Navigator.pop(context);
           Navigator.push(
             context,
@@ -65,7 +66,7 @@ class _MyHomePageState extends State<LoginPage> {
                       child: const MainPage(),
                     )),
           );
-        };
+        }
       });
     }
     const TextStyle textButtonFontStyle = TextStyle(fontSize: 18.0);
@@ -78,24 +79,24 @@ class _MyHomePageState extends State<LoginPage> {
           mainAxisSize: MainAxisSize.min,
           children: [
             DropdownButton<Profile>(
-                  value: viewModel.selectedProfile,
-                  icon: const Icon(Icons.arrow_downward),
-                  elevation: 16,
-                  style: const TextStyle(fontSize: 20, color: Colors.black87),
-                  underline: Container(
-                    height: 2,
-                    color: Theme.of(context).primaryColor,
-                  ),
-                  onChanged: (Profile? newValue) {
-                    viewModel.selectedProfile = newValue;
-                  },
-                  items: viewModel.profiles.map<DropdownMenuItem<Profile>>((Profile profile) {
-                    return DropdownMenuItem<Profile>(
-                      child: Text('${profile.channelName} | ${profile.botUsername}'),
-                      value: profile,
-                    );
-                  }).toList(),
-                ),
+              value: viewModel.selectedProfile,
+              icon: const Icon(Icons.arrow_downward),
+              elevation: 16,
+              style: const TextStyle(fontSize: 20, color: Colors.black87),
+              underline: Container(
+                height: 2,
+                color: Theme.of(context).primaryColor,
+              ),
+              onChanged: (Profile? newValue) {
+                viewModel.selectedProfile = newValue;
+              },
+              items: viewModel.profiles.map<DropdownMenuItem<Profile>>((Profile profile) {
+                return DropdownMenuItem<Profile>(
+                  child: Text('${profile.channelName} | ${profile.botUsername}'),
+                  value: profile,
+                );
+              }).toList(),
+            ),
             const SizedBox(
               height: 30.0,
             ),

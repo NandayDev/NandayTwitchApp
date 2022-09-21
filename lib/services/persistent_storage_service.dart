@@ -42,6 +42,16 @@ abstract class PersistentStorageService {
   Future<String> getWhatCommandContent(String defaultValue);
 
   Future<bool> setWhatCommandContent(String value);
+
+  // Quotes //
+  Future<String?> getRandomQuote();
+
+  Future<String?> getQuote(String key);
+
+  Future<bool> saveQuote(String key, String value);
+
+  // Bot language //
+  Future<String> getBotLanguage();
 }
 
 class PersistentStorageServiceImpl implements PersistentStorageService {
@@ -60,6 +70,8 @@ class PersistentStorageServiceImpl implements PersistentStorageService {
 
   @override
   Profile? currentProfile;
+
+  int get _profileId { return currentProfile!.id!; }
 
   @override
   Future<bool> createOrEditProfile(Profile profile) async {
@@ -103,7 +115,7 @@ class PersistentStorageServiceImpl implements PersistentStorageService {
   @override
   Future<List<String>> getBroadcastMessages() async {
     Database database = await _getDatabase();
-    var queryResults = await database.query(_BROADCAST_MESSAGES_TABLE_NAME, where: '$_BROADCAST_MESSAGE_PROFILE_ID = ${currentProfile!.id}');
+    var queryResults = await database.query(_BROADCAST_MESSAGES_TABLE_NAME, where: '$_BROADCAST_MESSAGE_PROFILE_ID = ${_profileId}');
     List<String> broadcastMessages = [];
     for (var queryResult in queryResults) {
       broadcastMessages.add(queryResult[_BROADCAST_MESSAGE_TEXT] as String);
@@ -142,10 +154,10 @@ class PersistentStorageServiceImpl implements PersistentStorageService {
     try {
       Database database = await _getDatabase();
       await database.transaction((txn) async {
-        await txn.delete(_BROADCAST_MESSAGES_TABLE_NAME, where: '$_BROADCAST_MESSAGE_PROFILE_ID = ${currentProfile!.id}');
+        await txn.delete(_BROADCAST_MESSAGES_TABLE_NAME, where: '$_BROADCAST_MESSAGE_PROFILE_ID = ${_profileId}');
         for (String message in messages) {
           await txn.insert(_BROADCAST_MESSAGES_TABLE_NAME, {
-            _BROADCAST_MESSAGE_PROFILE_ID : currentProfile!.id,
+            _BROADCAST_MESSAGE_PROFILE_ID : _profileId,
             _BROADCAST_MESSAGE_TEXT : message
           });
         }
@@ -167,7 +179,63 @@ class PersistentStorageServiceImpl implements PersistentStorageService {
     return _setSetting(_SETTING_KEY_WHAT_COMMAND_CONTENT, value);
   }
 
+
+
+  @override
+  Future<String?> getRandomQuote() async {
+    // SELECT * FROM table ORDER BY RANDOM() LIMIT 1;
+    Database database = await _getDatabase();
+    List<Map<String, Object?>> queryResult = await database.query(
+        _QUOTES_TABLE_NAME,
+      where: '$_QUOTE_PROFILE_ID = $_profileId',
+      orderBy: 'RANDOM()',
+      limit: 1
+    );
+    return _firstQueryResultOrNull<String>(queryResult, _QUOTE_VALUE);
+  }
+
+  @override
+  Future<String?> getQuote(String key) async {
+    Database database = await _getDatabase();
+    List<Map<String, Object?>> queryResult = await database.query(
+        _QUOTES_TABLE_NAME,
+        columns: [ _QUOTE_VALUE ],
+        where: '$_QUOTE_PROFILE_ID = $_profileId AND $_QUOTE_KEY = $key'
+    );
+    return _firstQueryResultOrNull<String>(queryResult, _QUOTE_VALUE);
+  }
+
+  @override
+  Future<bool> saveQuote(String key, String value) async {
+    try {
+      Database database = await _getDatabase();
+      await database.insert(_QUOTES_TABLE_NAME,
+          {
+            _QUOTE_PROFILE_ID: _profileId,
+            _QUOTE_KEY: key,
+            _QUOTE_VALUE: value
+          },
+          conflictAlgorithm: ConflictAlgorithm.replace);
+      return true;
+    } catch (e) {
+      _loggerService.e("Error while saving quote: ${e.toString()}");
+    }
+    return false;
+  }
+
+  @override
+  Future<String> getBotLanguage() {
+    return _getStringSetting(_SETTING_KEY_BOT_LANGUAGE, 'en');
+  }
+
   Database? _database;
+
+  T? _firstQueryResultOrNull<T>(List<Map<String, Object?>> queryResult, String columnName) {
+    if (queryResult.isEmpty) {
+      return null;
+    }
+    return queryResult[0][columnName] as T;
+  }
 
   Future<Database> _getDatabase() async {
     if (_database == null) {
@@ -189,7 +257,19 @@ class PersistentStorageServiceImpl implements PersistentStorageService {
             '$_SETTING_KEY TEXT NOT NULL,'
             '$_SETTING_VALUE TEXT NOT NULL,'
             'PRIMARY KEY ($_SETTING_PROFILE_ID, $_SETTING_KEY),'
-            'FOREIGN KEY($_SETTING_PROFILE_ID) REFERENCES $_PROFILES_TABLE_NAME($_PROFILE_ID));');
+            'FOREIGN KEY($_SETTING_PROFILE_ID) REFERENCES $_PROFILES_TABLE_NAME($_PROFILE_ID));'
+        );
+
+      }, onUpgrade: (db, oldVersion, newVersion) {
+        if (newVersion == 1) {
+          return db.execute('CREATE TABLE $_QUOTES_TABLE_NAME('
+              '$_QUOTE_PROFILE_ID INTEGER NOT NULL,'
+              '$_QUOTE_KEY TEXT NOT NULL,'
+              '$_QUOTE_VALUE TEXT NOT NULL,'
+              'PRIMARY KEY ($_QUOTE_PROFILE_ID, $_QUOTE_KEY),'
+              'FOREIGN KEY($_QUOTE_PROFILE_ID) REFERENCES $_PROFILES_TABLE_NAME($_PROFILE_ID));'
+          );
+        }
       }));
     }
     return _database!;
@@ -231,7 +311,7 @@ class PersistentStorageServiceImpl implements PersistentStorageService {
       Database database = await _getDatabase();
       await database.insert(_SETTINGS_TABLE_NAME,
           {
-            _SETTING_PROFILE_ID: currentProfile!.id,
+            _SETTING_PROFILE_ID: _profileId,
             _SETTING_KEY: settingKey,
             _SETTING_VALUE: settingValue
           },
@@ -246,7 +326,7 @@ class PersistentStorageServiceImpl implements PersistentStorageService {
 
   Future<Map<String, String>> _initializeSettingsCache() async {
     Database database = await _getDatabase();
-    var queryResults = await database.query(_SETTINGS_TABLE_NAME, where: '$_SETTING_PROFILE_ID = ${currentProfile!.id}');
+    var queryResults = await database.query(_SETTINGS_TABLE_NAME, where: '$_SETTING_PROFILE_ID = $_profileId');
     Map<String, String> settings = {};
     for (var queryResult in queryResults) {
       settings[queryResult[_SETTING_KEY] as String] = queryResult[_SETTING_VALUE] as String;
@@ -273,8 +353,16 @@ class PersistentStorageServiceImpl implements PersistentStorageService {
   static const String _SETTING_KEY_BROADCAST_DELAY = "broadcast_delay";
   static const String _SETTING_KEY_TTS_LANGUAGE = "tts_language";
   static const String _SETTING_KEY_WHAT_COMMAND_CONTENT = "what_command_content";
+  static const String _SETTING_KEY_BOT_LANGUAGE = "bot_language";
+
+  static const String _QUOTES_TABLE_NAME = "quotes";
+  static const String _QUOTE_PROFILE_ID = "profile_id";
+  static const String _QUOTE_KEY = "key";
+  static const String _QUOTE_VALUE = "value";
 
   static const int _DEFAULT_BROADCAST_DELAY_SECONDS = 60 * 5;
+
+
 
 
 }

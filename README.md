@@ -12,6 +12,7 @@ Currently running on Windows only. Planning to add MacOS, and maybe Linux, later
 - [ ] "Epic quotes"
   - [ ] Saving
   - [ ] Displaying
+- [ ] Localization
 - [ ] Sound effects playing, with the possibility to add more
 - [ ] Currency system
 - [ ] List of users following my stream

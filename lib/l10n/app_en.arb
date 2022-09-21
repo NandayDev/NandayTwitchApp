@@ -1,0 +1,8 @@
+{
+  "whatMessageNotSet": "Sorry, \"what\" message not set. Ask the streamer to set it via !editcmd",
+  "notAuthorizedToSetCommands": "You're not authorized to edit commands.",
+  "commandSuccessfullySet": "Command successfully set!",
+  "commandUnknown": "Sorry, command unknown or an error occurred",
+  "noQuoteAvailable": "There are no quotes saved yet. To save a quote, write in chat !quote quotename text of the quote",
+  "unrecognizedCommand": "Unrecognized command. Sorry!"
+}

@@ -8,7 +8,7 @@ import 'package:nanday_twitch_app/services/logger_service.dart';
 
 
 abstract class SoundService {
-  void initialize();
+  Future initialize();
 }
 
 class SoundServiceImpl implements SoundService {
@@ -20,7 +20,7 @@ class SoundServiceImpl implements SoundService {
   final _player = AudioPlayer();
 
   @override
-  void initialize() {
+  Future initialize() async {
     _eventService.subscribeToChatMessageReceivedEvent((chatMessage) {
       if (false == chatMessage.isFromStreamer && false == chatMessage.isFromStreamerBot) {
         _playFile(_Sound.NEW_MESSAGE);

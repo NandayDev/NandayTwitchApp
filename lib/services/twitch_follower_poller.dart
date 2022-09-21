@@ -10,7 +10,7 @@ import 'package:nanday_twitch_app/services/twitch_authentication_service.dart';
 import 'package:nanday_twitch_app/services/twitch_keys_reader.dart';
 
 abstract class TwitchFollowerPoller {
-  void initialize();
+  Future initialize();
 }
 
 class TwitchFollowerPollerImpl implements TwitchFollowerPoller {
@@ -24,8 +24,7 @@ class TwitchFollowerPollerImpl implements TwitchFollowerPoller {
   final HashMap<String, String> _currentFollowers = HashMap();
 
   @override
-  void initialize() async {
-    Duration pollIntervalDuration = const Duration(seconds: 5);
+  Future initialize() async {
     TwitchKeys keys = await _twitchKeysReader.getTwitchKeys();
     Map<String, String> headers = {'Authorization': 'Bearer ${_authenticationService.accessToken!}', 'Client-Id': keys.applicationClientId};
 
@@ -37,10 +36,7 @@ class TwitchFollowerPollerImpl implements TwitchFollowerPoller {
     Uri getUsersFollowsEndpoint = Uri.parse('https://api.twitch.tv/helix/users/follows?to_id=$userId');
 
     await _pollUsersFollowsEndpoint(getUsersFollowsEndpoint, headers, false);
-    while (true) {
-      await Future.delayed(pollIntervalDuration);
-      _pollUsersFollowsEndpoint(getUsersFollowsEndpoint, headers, true);
-    }
+    _startContinuousUsersPolling(getUsersFollowsEndpoint, headers);
   }
 
   Future<int?> _getUserId(String userLogin, Map<String, String> headers) async {
@@ -63,6 +59,14 @@ class TwitchFollowerPollerImpl implements TwitchFollowerPoller {
     return null;
   }
 
+  void _startContinuousUsersPolling(Uri getUsersFollowsEndpoint, Map<String, String> headers) async {
+    Duration pollIntervalDuration = const Duration(seconds: 5);
+    while (true) {
+      await Future.delayed(pollIntervalDuration);
+      _pollUsersFollowsEndpoint(getUsersFollowsEndpoint, headers, true);
+    }
+  }
+
   Future _pollUsersFollowsEndpoint(Uri getUsersFollowsEndpoint, Map<String, String> headers, bool notifyNewFollower) async {
     try {
       http.Response response = await http.get(getUsersFollowsEndpoint, headers: headers);
@@ -82,4 +86,5 @@ class TwitchFollowerPollerImpl implements TwitchFollowerPoller {
       _loggerService.w(e.toString());
     }
   }
+
 }

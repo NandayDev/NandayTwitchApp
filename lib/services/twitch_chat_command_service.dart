@@ -1,21 +1,25 @@
 import 'dart:collection';
 
 import 'package:intl/intl.dart';
+import 'package:nanday_twitch_app/services/localizer.dart';
 import 'package:nanday_twitch_app/services/event_service.dart';
 import 'package:nanday_twitch_app/services/persistent_storage_service.dart';
+import 'package:nanday_twitch_app/services/quotes_service.dart';
 import 'package:nanday_twitch_app/services/twitch_chat_service.dart';
 import 'package:nanday_twitch_app/services/twitch_keys_reader.dart';
 
 abstract class TwitchChatCommandService {
-  void initialize();
+  Future initialize();
 }
 
 class TwitchChatCommandServiceImpl implements TwitchChatCommandService {
-  TwitchChatCommandServiceImpl(this._twitchChatService, this._eventService, this._storageService);
+  TwitchChatCommandServiceImpl(this._twitchChatService, this._eventService, this._storageService, this._quoteService, this._localizer);
 
   final EventService _eventService;
   final TwitchChatService _twitchChatService;
   final PersistentStorageService _storageService;
+  final QuoteService _quoteService;
+  final Localizer _localizer;
 
   final HashSet<String> _greetedUsers = HashSet();
 
@@ -24,7 +28,7 @@ class TwitchChatCommandServiceImpl implements TwitchChatCommandService {
   final _timeFormat = DateFormat.Hms();
 
   @override
-  void initialize() async {
+  Future initialize() async {
     _greetedUsers.add(_storageService.currentProfile!.channelName);
     _greetedUsers.add(_storageService.currentProfile!.botUsername);
     _eventService.subscribeToChatMessageReceivedEvent((chatMessage) async {
@@ -45,7 +49,7 @@ class TwitchChatCommandServiceImpl implements TwitchChatCommandService {
         case 'what':
           answer = await _storageService.getWhatCommandContent('');
           if (answer.isEmpty) {
-            answer = 'Sorry, "what" message not set. Ask the streamer to set it via !editcmd';
+            answer = _localizer.localizations.whatMessageNotSet;
           }
           break;
 
@@ -56,7 +60,7 @@ class TwitchChatCommandServiceImpl implements TwitchChatCommandService {
 
         case 'editcmd':
           if (false == chatMessage.isFromStreamer) {
-            answer = 'You\'re not authorized to edit commands.';
+            answer = _localizer.localizations.notAuthorizedToSetCommands;
             break;
           }
           List<String>? otherParts = match.group(2)?.split(' ');
@@ -65,13 +69,24 @@ class TwitchChatCommandServiceImpl implements TwitchChatCommandService {
               case 'what':
                 String whatCommandContent = chatMessage.message.substring(14);
                 if (await _storageService.setWhatCommandContent(whatCommandContent)) {
-                  answer = 'Command successfully set!';
+                  answer = _localizer.localizations.commandSuccessfullySet;
                 }
                 break;
             }
           }
 
-          answer ??= 'Sorry, command unknown or an error occurred';
+          answer ??= _localizer.localizations.commandUnknown;
+          break;
+
+        case 'quote':
+          String? key = match.group(2);
+          if (key == null) {
+            // User's asking for a random quote //
+            String? randomQuote = await _quoteService.getRandomQuote();
+            if (randomQuote == null) {
+              answer = _localizer.localizations.noQuoteAvailable;
+            }
+          }
           break;
 
         default:
@@ -82,7 +97,7 @@ class TwitchChatCommandServiceImpl implements TwitchChatCommandService {
         await _twitchChatService.answerChatMessage(chatMessage, answer);
         return true;
       } else {
-        await _twitchChatService.answerChatMessage(chatMessage, 'Unrecognized command. Sorry!');
+        await _twitchChatService.answerChatMessage(chatMessage, _localizer.localizations.unrecognizedCommand);
       }
     }
 

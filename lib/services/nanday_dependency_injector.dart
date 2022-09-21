@@ -1,8 +1,11 @@
 import 'package:flutter_simple_dependency_injection/injector.dart';
 import 'package:nanday_twitch_app/services/broadcast_messages_service.dart';
 import 'package:nanday_twitch_app/services/event_service.dart';
+import 'package:nanday_twitch_app/services/localizer.dart';
 import 'package:nanday_twitch_app/services/logger_service.dart';
 import 'package:nanday_twitch_app/services/persistent_storage_service.dart';
+import 'package:nanday_twitch_app/services/quotes_service.dart';
+import 'package:nanday_twitch_app/services/service_initiator.dart';
 import 'package:nanday_twitch_app/services/sound_service.dart';
 import 'package:nanday_twitch_app/services/text_to_speech_service.dart';
 import 'package:nanday_twitch_app/services/twitch_authentication_service.dart';
@@ -45,17 +48,20 @@ class NandayDependencyInjector {
         .map<PersistentStorageService>((i) => PersistentStorageServiceImpl(i.get()), isSingleton: true)
         .map<BroadcastMessagesService>((i) => BroadcastMessagesServiceImpl(i.get(), i.get(), i.get(), i.get()), isSingleton: true)
         .map<LoggerService>((i) => LoggerServiceImpl(), isSingleton: true)
-        .map<TwitchChatCommandService>((i) => TwitchChatCommandServiceImpl(i.get(), i.get(), i.get()), isSingleton: true)
+        .map<TwitchChatCommandService>((i) => TwitchChatCommandServiceImpl(i.get(), i.get(), i.get(), i.get(), i.get()), isSingleton: true)
         .map<TwitchFollowerPoller>((i) => TwitchFollowerPollerImpl(i.get(), i.get(), i.get(), i.get(), i.get()), isSingleton: true)
         .map<TwitchThanker>((i) => TwitchThankerImpl(i.get(), i.get()), isSingleton: true)
         .map<SoundService>((i) => SoundServiceImpl(i.get(), i.get()), isSingleton: true)
+        .map<QuoteService>((i) => QuoteServiceImpl(i.get()), isSingleton: true)
+        .map<Localizer>((i) => LocalizerImpl(i.get()))
 
     // VIEW MODELS //
         // Login //
         .map<LoginPageViewModel>((i) => LoginPageViewModel(i.get(), i.get(), i.get()))
         // Main page //
-        .map((i) => MainPageViewModel(i.get(), i.get(), i.get(), i.get(), i.get(), i.get(), i.get(), i.get(), i.get()))
-        .mapWithParams<ChatMessageViewModel>((i, additionalParameters) => ChatMessageViewModel(i.get(), additionalParameters[ChatMessageViewModel.chatMessageParamName]))
+        .map((i) => MainPageViewModel(i.get(), i.get(), i.get(), i.get()))
+        .mapWithParams<ChatMessageViewModel>((i, additionalParameters) =>
+          ChatMessageViewModel(i.get(), additionalParameters[ChatMessageViewModel.chatMessageParamName]))
         // Broadcast messages //
         .map<BroadcastMessagesViewModel>((i) => BroadcastMessagesViewModel(i.get(), i.get()))
         // Profile //

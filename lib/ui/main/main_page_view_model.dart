@@ -12,8 +12,7 @@ import 'package:nanday_twitch_app/services/twitch_thanker.dart';
 import 'package:nanday_twitch_app/ui/base/nanday_view_model.dart';
 
 class MainPageViewModel extends NandayViewModel {
-  MainPageViewModel(this._twitchChatService, this._twitchChatCommandService, this._broadcastMessagesService,
-      this._textToSpeechService, this._preferencesService, this._twitchThanker, this._twitchFollowerPoller, this._eventService, this._soundService);
+  MainPageViewModel(this._twitchChatService, this._textToSpeechService, this._preferencesService, this._eventService);
 
   final List<TwitchChatMessage> chatMessages = [];
   bool isLoading = true;
@@ -22,23 +21,13 @@ class MainPageViewModel extends NandayViewModel {
   bool isLoadingLanguage = true;
 
   final TwitchChatService _twitchChatService;
-  final TwitchChatCommandService _twitchChatCommandService;
-  final BroadcastMessagesService _broadcastMessagesService;
   final TextToSpeechService _textToSpeechService;
   final PersistentStorageService _preferencesService;
-  final TwitchThanker _twitchThanker;
-  final TwitchFollowerPoller _twitchFollowerPoller;
-  final SoundService _soundService;
   final EventService _eventService;
 
   void initialize() async {
-    _twitchChatCommandService.initialize();
-    _soundService.initialize();
-    _twitchThanker.initialize();
-    _twitchFollowerPoller.initialize();
     await _initializeTwitchChat();
     await _getAvailableLanguages();
-    _broadcastMessagesService.initialize();
   }
 
   void setLanguage(String language) async {

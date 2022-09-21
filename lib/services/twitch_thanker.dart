@@ -3,7 +3,7 @@ import 'package:nanday_twitch_app/services/event_service.dart';
 import 'package:nanday_twitch_app/services/twitch_chat_service.dart';
 
 abstract class TwitchThanker {
-  void initialize();
+  Future initialize();
 }
 
 class TwitchThankerImpl implements TwitchThanker {
@@ -14,7 +14,7 @@ class TwitchThankerImpl implements TwitchThanker {
   final TwitchChatService _twitchChatService;
 
   @override
-  void initialize() {
+  Future initialize() async {
     // Notifications //
     _eventService.subscribeToNotificationReceivedEvent(_onNotificationReceived);
   }

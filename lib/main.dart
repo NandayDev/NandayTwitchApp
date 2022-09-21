@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:nanday_twitch_app/services/nanday_dependency_injector.dart';
+import 'package:nanday_twitch_app/services/service_initiator.dart';
 import 'package:nanday_twitch_app/ui/login/login_page.dart';
 import 'package:nanday_twitch_app/ui/login/login_page_view_model.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-void main() {
+void main() async {
+  await ServiceInitiator.instance.initializeAtAppStartup();
   runApp(const MyApp());
 }
 
@@ -15,13 +18,16 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        title: 'Flutter Demo',
+        title: 'NaNDay Twitch App',
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         theme: ThemeData(
           primarySwatch: Colors.blue,
         ),
         home: ChangeNotifierProvider(
           create: (context) => NandayDependencyInjector.instance.resolve<LoginPageViewModel>(),
           child: const LoginPage(),
-        ));
+        )
+    );
   }
 }
