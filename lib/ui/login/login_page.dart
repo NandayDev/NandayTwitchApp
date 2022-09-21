@@ -28,8 +28,9 @@ class _MyHomePageState extends State<LoginPage> {
     LoginPageViewModel viewModel = Provider.of<LoginPageViewModel>(context);
     if (viewModel.authenticationResult != null) {
       EmptyResult<String> authenticationResult = viewModel.authenticationResult!;
-      if (authenticationResult.hasError) {
-        showDialog(
+      Future.delayed(const Duration(seconds: 1)).then((value) {
+        if (authenticationResult.hasError) {
+          showDialog(
             context: context,
             barrierDismissible: false, // user must tap button!
             builder: (BuildContext context) {
@@ -54,7 +55,7 @@ class _MyHomePageState extends State<LoginPage> {
             });
       } else {
         // Goes to main page //
-        Future.delayed(const Duration(seconds: 1)).then((value) {
+
           Navigator.pop(context);
           Navigator.push(
             context,
@@ -64,8 +65,8 @@ class _MyHomePageState extends State<LoginPage> {
                       child: const MainPage(),
                     )),
           );
-        });
-      }
+        };
+      });
     }
     const TextStyle textButtonFontStyle = TextStyle(fontSize: 18.0);
     return Scaffold(
@@ -76,17 +77,14 @@ class _MyHomePageState extends State<LoginPage> {
             child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            SizedBox(
-                width: 300.0,
-                height: 50.0,
-                child: DropdownButton<Profile>(
+            DropdownButton<Profile>(
                   value: viewModel.selectedProfile,
                   icon: const Icon(Icons.arrow_downward),
                   elevation: 16,
-                  style: const TextStyle(fontSize: 20, color: Colors.deepPurple),
+                  style: const TextStyle(fontSize: 20, color: Colors.black87),
                   underline: Container(
                     height: 2,
-                    color: Colors.deepPurpleAccent,
+                    color: Theme.of(context).primaryColor,
                   ),
                   onChanged: (Profile? newValue) {
                     viewModel.selectedProfile = newValue;
@@ -97,7 +95,7 @@ class _MyHomePageState extends State<LoginPage> {
                       value: profile,
                     );
                   }).toList(),
-                )),
+                ),
             const SizedBox(
               height: 30.0,
             ),
@@ -110,8 +108,8 @@ class _MyHomePageState extends State<LoginPage> {
                       }
                     : null,
                 child: Padding(
-                    padding: EdgeInsets.all(10.0),
-                    child: viewModel.isLoading ? CircularProgressIndicator() : Text('LOGIN', style: TextStyle(fontSize: 20.0)))),
+                    padding: const EdgeInsets.all(10.0),
+                    child: viewModel.isLoading ? const CircularProgressIndicator() : const Text('LOGIN', style: TextStyle(fontSize: 20.0)))),
             const SizedBox(
               height: 30.0,
             ),

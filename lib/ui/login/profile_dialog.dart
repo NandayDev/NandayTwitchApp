@@ -91,7 +91,7 @@ class _ProfileDialogState extends State<ProfileDialog> {
           const SizedBox(
             width: 20,
           ),
-          MaterialButton(child: const Text("..."), onPressed: () async {
+          MaterialButton(color: const Color(0xEEEEEEEE), child: const Text("..."), onPressed: () async {
             var result = await FilePicker.platform.pickFiles();
             if (result?.files.isNotEmpty == true) {
               viewModel.browserExecutablePath = result!.files[0].path;
