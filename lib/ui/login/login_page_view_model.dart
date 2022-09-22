@@ -36,8 +36,9 @@ class LoginPageViewModel extends NandayViewModel {
   EmptyResult<String>? get authenticationResult { return _authenticationResult; }
 
   void getProfiles() async {
-    await _loggerService.ensureInitialized();
+    _loggerService.d("Getting profiles");
     profiles = await _storageService.getProfiles();
+    _loggerService.d("Profiles fetched");
 
     notifyPropertyChanged(() {
       isLoading = false;

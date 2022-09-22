@@ -1,5 +1,6 @@
-import 'package:nanday_twitch_app/services/localizer.dart';
 import 'package:nanday_twitch_app/services/broadcast_messages_service.dart';
+import 'package:nanday_twitch_app/services/localizer.dart';
+import 'package:nanday_twitch_app/services/logger_service.dart';
 import 'package:nanday_twitch_app/services/nanday_dependency_injector.dart';
 import 'package:nanday_twitch_app/services/sound_service.dart';
 import 'package:nanday_twitch_app/services/twitch_chat_command_service.dart';
@@ -9,8 +10,8 @@ import 'package:nanday_twitch_app/services/twitch_thanker.dart';
 ///
 /// A class to initialize important services
 class ServiceInitiator {
-
-  ServiceInitiator(this._botLocalizer, this._twitchChatCommandService, this._twitchThanker, this._twitchFollowerPoller, this._soundService, this._broadcastMessagesService);
+  ServiceInitiator(this._botLocalizer, this._twitchChatCommandService, this._twitchThanker, this._twitchFollowerPoller, this._soundService,
+      this._broadcastMessagesService, this._loggerService);
 
   final Localizer _botLocalizer;
   final TwitchChatCommandService _twitchChatCommandService;
@@ -18,11 +19,10 @@ class ServiceInitiator {
   final TwitchFollowerPoller _twitchFollowerPoller;
   final SoundService _soundService;
   final BroadcastMessagesService _broadcastMessagesService;
+  final LoggerService _loggerService;
 
   Future initializeAtAppStartup() {
-    return Future.wait([
-
-    ]);
+    return Future.wait([_loggerService.initialize()]);
   }
 
   Future initializeWhenLoggedIn() {
@@ -37,11 +37,11 @@ class ServiceInitiator {
   }
 
   static ServiceInitiator instance = ServiceInitiator(
-    NandayDependencyInjector.instance.resolve(),
-    NandayDependencyInjector.instance.resolve(),
-    NandayDependencyInjector.instance.resolve(),
-    NandayDependencyInjector.instance.resolve(),
-    NandayDependencyInjector.instance.resolve(),
-    NandayDependencyInjector.instance.resolve()
-  );
+      NandayDependencyInjector.instance.resolve(),
+      NandayDependencyInjector.instance.resolve(),
+      NandayDependencyInjector.instance.resolve(),
+      NandayDependencyInjector.instance.resolve(),
+      NandayDependencyInjector.instance.resolve(),
+      NandayDependencyInjector.instance.resolve(),
+      NandayDependencyInjector.instance.resolve());
 }

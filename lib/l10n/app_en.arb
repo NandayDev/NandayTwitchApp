@@ -1,8 +1,24 @@
 {
+  "botGreeting": "Hi everyone! My name is {0} and I'm here to disturb your stream.",
+  "welcomeMessage": "Welcome {0}! Have a seat!",
+
+  "newFollowerThank": "New follower! Thank you {0} for joining this fellowship through the dark lands!",
+  "newSubscriberThank": "Wow! Thank you {0} for financing this impossible journey!",
+  "resubscriberThank": "Hooray! Thank you {0} for keeping the parrots well fed!",
+  "subscriptionGiftThank": "Santa is coming! Thank you {0} for keeping this infernal machine going!",
+  "bigRaidThank": "Wow, so many people! Thank you {0} for joining the dark side of programming!",
+  "smallRaidThank": "RAID INCOMING! Thank you {0} for joining the dark side of programming!",
+
   "whatMessageNotSet": "Sorry, \"what\" message not set. Ask the streamer to set it via !editcmd",
-  "notAuthorizedToSetCommands": "You're not authorized to edit commands.",
+  "notAuthorized": "You're not authorized. Lol.",
+  "invalidCommandSyntax": "Invalid syntax. Check your message and try again.",
   "commandSuccessfullySet": "Command successfully set!",
   "commandUnknown": "Sorry, command unknown or an error occurred",
   "noQuoteAvailable": "There are no quotes saved yet. To save a quote, write in chat !quote quotename text of the quote",
-  "unrecognizedCommand": "Unrecognized command. Sorry!"
+  "quoteNotFound": "Sorry, quote not found.",
+  "quoteCorrectlySaved": "Quote correctly saved! Write {0} in the chat to use it.",
+  "quoteNotSaved": "Quote wasn't saved successfully. Try again.",
+  "unrecognizedCommand": "Unrecognized command. Sorry!",
+  "customCommandCorrectlySaved": "Custom command correctly saved!",
+  "customCommandNotSaved": "Custom command couldn't be saved. Try again."
 }

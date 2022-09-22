@@ -9,15 +9,15 @@ Currently running on Windows only. Planning to add MacOS, and maybe Linux, later
 ## Features to add
 
 - [x] "Multiprofile": possibility to login with a profile and use that
-- [ ] "Epic quotes"
-  - [ ] Saving
-  - [ ] Displaying
-- [ ] Localization
-- [ ] Sound effects playing, with the possibility to add more
-- [ ] Currency system
+- [x] Localization
+- [x] Possibility to add custom commands with predefined answers from the bot
+- [x] "Quotes"
+  - [x] Saving
+  - [x] Displaying
 - [ ] List of users following my stream
   - [ ] Bots should be in a separate list (https://twitchinsights.net/bots)
-- [ ] Possibility to add custom commands with predefined answers from the bot
+- [ ] Sound effects playing, with the possibility to add more
+- [ ] Currency system
 
 ### Other aspects
 

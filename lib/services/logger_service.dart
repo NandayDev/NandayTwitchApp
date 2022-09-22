@@ -6,7 +6,7 @@ import 'package:logger/logger.dart';
 import 'package:nanday_twitch_app/constants.dart';
 
 abstract class LoggerService {
-  Future ensureInitialized();
+  Future initialize();
 
   ///
   /// Logs a debug message
@@ -41,7 +41,7 @@ class LoggerServiceImpl implements LoggerService {
   final Queue<String> _logQueue = Queue();
 
   @override
-  Future ensureInitialized() async {
+  Future initialize() async {
     if (_logFile == null) {
       var directory = await getApplicationDataDirectory();
       _logFile = File("$directory\\${_dateFormat.format(DateTime.now())}.log");

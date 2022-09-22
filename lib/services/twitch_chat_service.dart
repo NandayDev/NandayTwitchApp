@@ -3,12 +3,11 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:nanday_twitch_app/models/twitch_notification.dart';
-import 'package:nanday_twitch_app/services/broadcast_messages_service.dart';
 import 'package:nanday_twitch_app/services/event_service.dart';
+import 'package:nanday_twitch_app/services/localizer.dart';
 import 'package:nanday_twitch_app/services/logger_service.dart';
 import 'package:nanday_twitch_app/services/persistent_storage_service.dart';
 import 'package:nanday_twitch_app/services/twitch_authentication_service.dart';
-import 'package:nanday_twitch_app/services/twitch_keys_reader.dart';
 import 'package:web_socket_channel/io.dart';
 
 abstract class TwitchChatService {
@@ -39,12 +38,13 @@ class TwitchChatMessage {
 }
 
 class TwitchChatServiceImpl implements TwitchChatService {
-  TwitchChatServiceImpl(this._logger, this._eventService, this._authenticationService, this._storageService);
+  TwitchChatServiceImpl(this._logger, this._eventService, this._authenticationService, this._storageService, this._localizer);
 
   final LoggerService _logger;
   final EventService _eventService;
   final TwitchAuthenticationService _authenticationService;
   final PersistentStorageService _storageService;
+  final Localizer _localizer;
 
   bool? _connectedSuccessfully, _joinedRoomSuccessfully;
   bool _sentHelloMessage = false;
@@ -82,10 +82,12 @@ class TwitchChatServiceImpl implements TwitchChatService {
         retries++;
         await Future.delayed(const Duration(milliseconds: 100));
       }
-      
+
       if (!_sentHelloMessage) {
         _sentHelloMessage = true;
-        sendChatMessage("Hi everyone! My name is ${_storageService.currentProfile!.botUsername} and I'm here to disturb your stream.");
+        String message = _localizer.localizations.botGreeting;
+        message = Localizer.getStringWithPlaceholders(message, [ _storageService.currentProfile!.botUsername ]);
+        sendChatMessage(message);
       }
     }
 

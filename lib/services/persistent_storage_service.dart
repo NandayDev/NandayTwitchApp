@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, prefer_conditional_assignment
 
 import 'package:nanday_twitch_app/constants.dart';
+import 'package:nanday_twitch_app/models/command.dart';
 import 'package:nanday_twitch_app/models/profile.dart';
 import 'package:nanday_twitch_app/services/logger_service.dart';
 import 'package:sqflite/sqflite.dart';
@@ -20,25 +21,21 @@ abstract class PersistentStorageService {
   Profile? currentProfile;
 
   // Broadcast delay //
-
   Future<int> getBroadcastDelay();
 
   Future<bool> setBroadcastDelay(int value);
 
   // Broadcast messages //
-
   Future<List<String>> getBroadcastMessages();
 
   Future<bool> setBroadcastMessages(List<String> messages);
 
   // Text to speech language //
-
   Future<String> getTextToSpeechLanguage(String defaultValue);
 
   Future<bool> setTextToSpeechLanguage(String value);
 
   // Content of "!what" command //
-
   Future<String> getWhatCommandContent(String defaultValue);
 
   Future<bool> setWhatCommandContent(String value);
@@ -50,18 +47,19 @@ abstract class PersistentStorageService {
 
   Future<bool> saveQuote(String key, String value);
 
-  // Bot language //
-  Future<String> getBotLanguage();
+  // Commands //
+  Future<CustomCommand?> getCustomCommand(String keyword);
+
+  Future<bool> saveCustomCommand(CustomCommand command);
 }
 
 class PersistentStorageServiceImpl implements PersistentStorageService {
-
   PersistentStorageServiceImpl(this._loggerService);
 
   final LoggerService _loggerService;
   Map<String, String>? __settingsCache;
 
-  Future<Map<String,String>> get _settingsCache async {
+  Future<Map<String, String>> get _settingsCache async {
     if (__settingsCache == null) {
       __settingsCache = await _initializeSettingsCache();
     }
@@ -71,7 +69,9 @@ class PersistentStorageServiceImpl implements PersistentStorageService {
   @override
   Profile? currentProfile;
 
-  int get _profileId { return currentProfile!.id!; }
+  int get _profileId {
+    return currentProfile!.id!;
+  }
 
   @override
   Future<bool> createOrEditProfile(Profile profile) async {
@@ -115,7 +115,7 @@ class PersistentStorageServiceImpl implements PersistentStorageService {
   @override
   Future<List<String>> getBroadcastMessages() async {
     Database database = await _getDatabase();
-    var queryResults = await database.query(_BROADCAST_MESSAGES_TABLE_NAME, where: '$_BROADCAST_MESSAGE_PROFILE_ID = ${_profileId}');
+    var queryResults = await database.query(_BROADCAST_MESSAGES_TABLE_NAME, where: '$_BROADCAST_MESSAGE_PROFILE_ID = $_profileId');
     List<String> broadcastMessages = [];
     for (var queryResult in queryResults) {
       broadcastMessages.add(queryResult[_BROADCAST_MESSAGE_TEXT] as String);
@@ -154,12 +154,9 @@ class PersistentStorageServiceImpl implements PersistentStorageService {
     try {
       Database database = await _getDatabase();
       await database.transaction((txn) async {
-        await txn.delete(_BROADCAST_MESSAGES_TABLE_NAME, where: '$_BROADCAST_MESSAGE_PROFILE_ID = ${_profileId}');
+        await txn.delete(_BROADCAST_MESSAGES_TABLE_NAME, where: '$_BROADCAST_MESSAGE_PROFILE_ID = $_profileId');
         for (String message in messages) {
-          await txn.insert(_BROADCAST_MESSAGES_TABLE_NAME, {
-            _BROADCAST_MESSAGE_PROFILE_ID : _profileId,
-            _BROADCAST_MESSAGE_TEXT : message
-          });
+          await txn.insert(_BROADCAST_MESSAGES_TABLE_NAME, {_BROADCAST_MESSAGE_PROFILE_ID: _profileId, _BROADCAST_MESSAGE_TEXT: message});
         }
       });
       return true;
@@ -179,29 +176,20 @@ class PersistentStorageServiceImpl implements PersistentStorageService {
     return _setSetting(_SETTING_KEY_WHAT_COMMAND_CONTENT, value);
   }
 
-
-
   @override
   Future<String?> getRandomQuote() async {
     // SELECT * FROM table ORDER BY RANDOM() LIMIT 1;
     Database database = await _getDatabase();
-    List<Map<String, Object?>> queryResult = await database.query(
-        _QUOTES_TABLE_NAME,
-      where: '$_QUOTE_PROFILE_ID = $_profileId',
-      orderBy: 'RANDOM()',
-      limit: 1
-    );
+    List<Map<String, Object?>> queryResult =
+        await database.query(_QUOTES_TABLE_NAME, where: '$_QUOTE_PROFILE_ID = $_profileId', orderBy: 'RANDOM()', limit: 1);
     return _firstQueryResultOrNull<String>(queryResult, _QUOTE_VALUE);
   }
 
   @override
   Future<String?> getQuote(String key) async {
     Database database = await _getDatabase();
-    List<Map<String, Object?>> queryResult = await database.query(
-        _QUOTES_TABLE_NAME,
-        columns: [ _QUOTE_VALUE ],
-        where: '$_QUOTE_PROFILE_ID = $_profileId AND $_QUOTE_KEY = $key'
-    );
+    List<Map<String, Object?>> queryResult =
+        await database.query(_QUOTES_TABLE_NAME, columns: [_QUOTE_VALUE], where: '$_QUOTE_PROFILE_ID = $_profileId AND $_QUOTE_KEY = "$key"');
     return _firstQueryResultOrNull<String>(queryResult, _QUOTE_VALUE);
   }
 
@@ -209,12 +197,7 @@ class PersistentStorageServiceImpl implements PersistentStorageService {
   Future<bool> saveQuote(String key, String value) async {
     try {
       Database database = await _getDatabase();
-      await database.insert(_QUOTES_TABLE_NAME,
-          {
-            _QUOTE_PROFILE_ID: _profileId,
-            _QUOTE_KEY: key,
-            _QUOTE_VALUE: value
-          },
+      await database.insert(_QUOTES_TABLE_NAME, {_QUOTE_PROFILE_ID: _profileId, _QUOTE_KEY: key, _QUOTE_VALUE: value},
           conflictAlgorithm: ConflictAlgorithm.replace);
       return true;
     } catch (e) {
@@ -224,8 +207,32 @@ class PersistentStorageServiceImpl implements PersistentStorageService {
   }
 
   @override
-  Future<String> getBotLanguage() {
-    return _getStringSetting(_SETTING_KEY_BOT_LANGUAGE, 'en');
+  Future<CustomCommand?> getCustomCommand(String keyword) async {
+    Database database = await _getDatabase();
+    List<Map<String, Object?>> queryResult = await database.query(
+        _CUSTOM_COMMANDS_TABLE_NAME,
+        columns: [_CUSTOM_COMMAND_CONTENT],
+        where: '$_CUSTOM_COMMAND_PROFILE_ID = $_profileId AND $_CUSTOM_COMMAND_KEYWORD = "$keyword"'
+    );
+    String? content = _firstQueryResultOrNull<String>(queryResult, _CUSTOM_COMMAND_CONTENT);
+    if (content == null) {
+      return null;
+    }
+    return CustomCommand(keyword, content);
+  }
+
+  @override
+  Future<bool> saveCustomCommand(CustomCommand command) async {
+    try {
+      Database database = await _getDatabase();
+      await database.insert(_CUSTOM_COMMANDS_TABLE_NAME,
+          {_CUSTOM_COMMAND_PROFILE_ID: _profileId, _CUSTOM_COMMAND_KEYWORD: command.keyword, _CUSTOM_COMMAND_CONTENT: command.content},
+          conflictAlgorithm: ConflictAlgorithm.replace);
+      return true;
+    } catch (e) {
+      _loggerService.e("Error while saving quote: ${e.toString()}");
+    }
+    return false;
   }
 
   Database? _database;
@@ -239,38 +246,51 @@ class PersistentStorageServiceImpl implements PersistentStorageService {
 
   Future<Database> _getDatabase() async {
     if (_database == null) {
-      sqfliteFfiInit();
+      _loggerService.d("_getDatabase: Initializing database");
+      try {
+        sqfliteFfiInit();
+      } catch (e) {
+        _loggerService.e("_getDatabase: sqfliteFfiInit returned error: ${e.toString()}");
+      }
       String databasePath = (await getApplicationDataDirectory()) + "\\nanday.ndb";
-      _database = await databaseFactoryFfi.openDatabase(databasePath, options: OpenDatabaseOptions(version: 1, onCreate: (db, version) {
-        return db.execute('CREATE TABLE $_PROFILES_TABLE_NAME('
-            '$_PROFILE_ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,'
-            '$_PROFILE_CHANNEL_NAME TEXT NOT NULL,'
-            '$_PROFILE_BOT_USERNAME TEXT NOT NULL,'
-            '$_PROFILE_BROWSER_EXECUTABLE TEXT DEFAULT NULL);'
-            'CREATE TABLE $_BROADCAST_MESSAGES_TABLE_NAME('
-            '$_BROADCAST_MESSAGE_ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,'
-            '$_BROADCAST_MESSAGE_PROFILE_ID INTEGER NOT NULL,'
-            '$_BROADCAST_MESSAGE_TEXT TEXT NOT NULL,'
-            'FOREIGN KEY($_BROADCAST_MESSAGE_PROFILE_ID) REFERENCES $_PROFILES_TABLE_NAME($_PROFILE_ID));'
-            'CREATE TABLE $_SETTINGS_TABLE_NAME('
-            '$_SETTING_PROFILE_ID INTEGER NOT NULL,'
-            '$_SETTING_KEY TEXT NOT NULL,'
-            '$_SETTING_VALUE TEXT NOT NULL,'
-            'PRIMARY KEY ($_SETTING_PROFILE_ID, $_SETTING_KEY),'
-            'FOREIGN KEY($_SETTING_PROFILE_ID) REFERENCES $_PROFILES_TABLE_NAME($_PROFILE_ID));'
-        );
-
-      }, onUpgrade: (db, oldVersion, newVersion) {
-        if (newVersion == 1) {
-          return db.execute('CREATE TABLE $_QUOTES_TABLE_NAME('
-              '$_QUOTE_PROFILE_ID INTEGER NOT NULL,'
-              '$_QUOTE_KEY TEXT NOT NULL,'
-              '$_QUOTE_VALUE TEXT NOT NULL,'
-              'PRIMARY KEY ($_QUOTE_PROFILE_ID, $_QUOTE_KEY),'
-              'FOREIGN KEY($_QUOTE_PROFILE_ID) REFERENCES $_PROFILES_TABLE_NAME($_PROFILE_ID));'
-          );
-        }
-      }));
+      _loggerService.d("_getDatabase: Path is $databasePath");
+      _database = await databaseFactoryFfi.openDatabase(databasePath,
+          options: OpenDatabaseOptions(
+              version: 1,
+              onUpgrade: (db, oldVersion, newVersion) async {
+                if (oldVersion == 0) {
+                  await db.execute('CREATE TABLE $_PROFILES_TABLE_NAME('
+                      '$_PROFILE_ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,'
+                      '$_PROFILE_CHANNEL_NAME TEXT NOT NULL,'
+                      '$_PROFILE_BOT_USERNAME TEXT NOT NULL,'
+                      '$_PROFILE_BROWSER_EXECUTABLE TEXT DEFAULT NULL,'
+                      '$_PROFILE_BOT_LANGUAGE TEXT NOT NULL);'
+                      'CREATE TABLE $_BROADCAST_MESSAGES_TABLE_NAME('
+                      '$_BROADCAST_MESSAGE_ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,'
+                      '$_BROADCAST_MESSAGE_PROFILE_ID INTEGER NOT NULL,'
+                      '$_BROADCAST_MESSAGE_TEXT TEXT NOT NULL,'
+                      'FOREIGN KEY($_BROADCAST_MESSAGE_PROFILE_ID) REFERENCES $_PROFILES_TABLE_NAME($_PROFILE_ID));'
+                      'CREATE TABLE $_SETTINGS_TABLE_NAME('
+                      '$_SETTING_PROFILE_ID INTEGER NOT NULL,'
+                      '$_SETTING_KEY TEXT NOT NULL,'
+                      '$_SETTING_VALUE TEXT NOT NULL,'
+                      'PRIMARY KEY ($_SETTING_PROFILE_ID, $_SETTING_KEY),'
+                      'FOREIGN KEY($_SETTING_PROFILE_ID) REFERENCES $_PROFILES_TABLE_NAME($_PROFILE_ID));');
+                  await db.execute('CREATE TABLE $_QUOTES_TABLE_NAME('
+                      '$_QUOTE_PROFILE_ID INTEGER NOT NULL,'
+                      '$_QUOTE_KEY TEXT NOT NULL,'
+                      '$_QUOTE_VALUE TEXT NOT NULL,'
+                      'PRIMARY KEY ($_QUOTE_PROFILE_ID, $_QUOTE_KEY),'
+                      'FOREIGN KEY($_QUOTE_PROFILE_ID) REFERENCES $_PROFILES_TABLE_NAME($_PROFILE_ID));');
+                  await db.execute('CREATE TABLE $_CUSTOM_COMMANDS_TABLE_NAME('
+                      '$_CUSTOM_COMMAND_PROFILE_ID INTEGER NOT NULL,'
+                      '$_CUSTOM_COMMAND_KEYWORD TEXT NOT NULL,'
+                      '$_CUSTOM_COMMAND_CONTENT TEXT NOT NULL,'
+                      'PRIMARY KEY ($_CUSTOM_COMMAND_PROFILE_ID, $_CUSTOM_COMMAND_KEYWORD),'
+                      'FOREIGN KEY($_CUSTOM_COMMAND_PROFILE_ID) REFERENCES $_PROFILES_TABLE_NAME($_PROFILE_ID));');
+                }
+              }));
+      _loggerService.d("_getDatabase: Database created");
     }
     return _database!;
   }
@@ -279,7 +299,8 @@ class PersistentStorageServiceImpl implements PersistentStorageService {
     Map<String, dynamic> map = {
       _PROFILE_CHANNEL_NAME: profile.channelName,
       _PROFILE_BOT_USERNAME: profile.botUsername,
-      _PROFILE_BROWSER_EXECUTABLE: profile.browserExecutable
+      _PROFILE_BROWSER_EXECUTABLE: profile.browserExecutable,
+      _PROFILE_BOT_LANGUAGE: profile.botLanguage
     };
     if (profile.id != null) {
       map[_PROFILE_ID] = profile.id;
@@ -288,8 +309,11 @@ class PersistentStorageServiceImpl implements PersistentStorageService {
   }
 
   Profile _convertMapToProfile(Map<String, Object?> queryResult) {
-    return Profile(queryResult[_PROFILE_BOT_USERNAME] as String, queryResult[_PROFILE_CHANNEL_NAME] as String,
+    return Profile(
+        queryResult[_PROFILE_BOT_USERNAME] as String,
+        queryResult[_PROFILE_CHANNEL_NAME] as String,
         queryResult.containsKey(_PROFILE_BROWSER_EXECUTABLE) ? queryResult[_PROFILE_BROWSER_EXECUTABLE] as String? : null,
+        queryResult[_PROFILE_BOT_LANGUAGE] as String,
         id: queryResult.containsKey(_PROFILE_ID) ? queryResult[_PROFILE_ID] as int : null);
   }
 
@@ -309,12 +333,7 @@ class PersistentStorageServiceImpl implements PersistentStorageService {
   Future<bool> _setSetting(String settingKey, String settingValue) async {
     try {
       Database database = await _getDatabase();
-      await database.insert(_SETTINGS_TABLE_NAME,
-          {
-            _SETTING_PROFILE_ID: _profileId,
-            _SETTING_KEY: settingKey,
-            _SETTING_VALUE: settingValue
-          },
+      await database.insert(_SETTINGS_TABLE_NAME, {_SETTING_PROFILE_ID: _profileId, _SETTING_KEY: settingKey, _SETTING_VALUE: settingValue},
           conflictAlgorithm: ConflictAlgorithm.replace);
       __settingsCache?[settingKey] = settingValue;
       return true;
@@ -339,6 +358,7 @@ class PersistentStorageServiceImpl implements PersistentStorageService {
   static const String _PROFILE_CHANNEL_NAME = "channel_name";
   static const String _PROFILE_BOT_USERNAME = "bot_username";
   static const String _PROFILE_BROWSER_EXECUTABLE = "browser_executable";
+  static const String _PROFILE_BOT_LANGUAGE = "bot_language";
 
   static const String _BROADCAST_MESSAGES_TABLE_NAME = "broadcast_messages";
   static const String _BROADCAST_MESSAGE_ID = "id";
@@ -353,16 +373,16 @@ class PersistentStorageServiceImpl implements PersistentStorageService {
   static const String _SETTING_KEY_BROADCAST_DELAY = "broadcast_delay";
   static const String _SETTING_KEY_TTS_LANGUAGE = "tts_language";
   static const String _SETTING_KEY_WHAT_COMMAND_CONTENT = "what_command_content";
-  static const String _SETTING_KEY_BOT_LANGUAGE = "bot_language";
 
   static const String _QUOTES_TABLE_NAME = "quotes";
   static const String _QUOTE_PROFILE_ID = "profile_id";
   static const String _QUOTE_KEY = "key";
   static const String _QUOTE_VALUE = "value";
 
+  static const String _CUSTOM_COMMANDS_TABLE_NAME = "custom_commands";
+  static const String _CUSTOM_COMMAND_PROFILE_ID = "profile_id";
+  static const String _CUSTOM_COMMAND_KEYWORD = "keyword";
+  static const String _CUSTOM_COMMAND_CONTENT = "content";
+
   static const int _DEFAULT_BROADCAST_DELAY_SECONDS = 60 * 5;
-
-
-
-
 }

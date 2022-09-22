@@ -5,7 +5,6 @@ import 'package:nanday_twitch_app/services/localizer.dart';
 import 'package:nanday_twitch_app/services/logger_service.dart';
 import 'package:nanday_twitch_app/services/persistent_storage_service.dart';
 import 'package:nanday_twitch_app/services/quotes_service.dart';
-import 'package:nanday_twitch_app/services/service_initiator.dart';
 import 'package:nanday_twitch_app/services/sound_service.dart';
 import 'package:nanday_twitch_app/services/text_to_speech_service.dart';
 import 'package:nanday_twitch_app/services/twitch_authentication_service.dart';
@@ -43,17 +42,17 @@ class NandayDependencyInjector {
         .map<EventService>((i) => EventServiceImpl(), isSingleton: true)
         .map<TwitchKeysReader>((i) => TwitchKeysReader(), isSingleton: true)
         .map<TwitchAuthenticationService>((i) => TwitchAuthenticationServiceImpl(i.get(), i.get()), isSingleton: true)
-        .map<TwitchChatService>((i) => TwitchChatServiceImpl(i.get(), i.get(), i.get(), i.get()), isSingleton: true)
+        .map<TwitchChatService>((i) => TwitchChatServiceImpl(i.get(), i.get(), i.get(), i.get(), i.get()), isSingleton: true)
         .map<TextToSpeechService>((i) => TextToSpeechService(), isSingleton: true)
         .map<PersistentStorageService>((i) => PersistentStorageServiceImpl(i.get()), isSingleton: true)
         .map<BroadcastMessagesService>((i) => BroadcastMessagesServiceImpl(i.get(), i.get(), i.get(), i.get()), isSingleton: true)
         .map<LoggerService>((i) => LoggerServiceImpl(), isSingleton: true)
         .map<TwitchChatCommandService>((i) => TwitchChatCommandServiceImpl(i.get(), i.get(), i.get(), i.get(), i.get()), isSingleton: true)
         .map<TwitchFollowerPoller>((i) => TwitchFollowerPollerImpl(i.get(), i.get(), i.get(), i.get(), i.get()), isSingleton: true)
-        .map<TwitchThanker>((i) => TwitchThankerImpl(i.get(), i.get()), isSingleton: true)
+        .map<TwitchThanker>((i) => TwitchThankerImpl(i.get(), i.get(), i.get()), isSingleton: true)
         .map<SoundService>((i) => SoundServiceImpl(i.get(), i.get()), isSingleton: true)
         .map<QuoteService>((i) => QuoteServiceImpl(i.get()), isSingleton: true)
-        .map<Localizer>((i) => LocalizerImpl(i.get()))
+        .map<Localizer>((i) => LocalizerImpl(i.get()), isSingleton: true)
 
     // VIEW MODELS //
         // Login //

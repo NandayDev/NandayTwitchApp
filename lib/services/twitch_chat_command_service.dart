@@ -1,12 +1,12 @@
 import 'dart:collection';
 
 import 'package:intl/intl.dart';
-import 'package:nanday_twitch_app/services/localizer.dart';
+import 'package:nanday_twitch_app/models/command.dart';
 import 'package:nanday_twitch_app/services/event_service.dart';
+import 'package:nanday_twitch_app/services/localizer.dart';
 import 'package:nanday_twitch_app/services/persistent_storage_service.dart';
 import 'package:nanday_twitch_app/services/quotes_service.dart';
 import 'package:nanday_twitch_app/services/twitch_chat_service.dart';
-import 'package:nanday_twitch_app/services/twitch_keys_reader.dart';
 
 abstract class TwitchChatCommandService {
   Future initialize();
@@ -36,7 +36,9 @@ class TwitchChatCommandServiceImpl implements TwitchChatCommandService {
 
       if (false == _greetedUsers.contains(chatMessage.author)) {
         _greetedUsers.add(chatMessage.author);
-        _twitchChatService.sendChatMessage("Welcome ${chatMessage.author}! Have a seat!");
+        String message = _localizer.localizations.welcomeMessage;
+        message = Localizer.getStringWithPlaceholders(message, [chatMessage.author]);
+        _twitchChatService.sendChatMessage(message);
       }
     });
   }
@@ -45,7 +47,8 @@ class TwitchChatCommandServiceImpl implements TwitchChatCommandService {
     Match? match = _commandsPattern.matchAsPrefix(chatMessage.message);
     if (match != null) {
       String? answer;
-      switch (match.group(1)) {
+      String? commandKeyword = match.group(1);
+      switch (commandKeyword) {
         case 'what':
           answer = await _storageService.getWhatCommandContent('');
           if (answer.isEmpty) {
@@ -60,7 +63,7 @@ class TwitchChatCommandServiceImpl implements TwitchChatCommandService {
 
         case 'editcmd':
           if (false == chatMessage.isFromStreamer) {
-            answer = _localizer.localizations.notAuthorizedToSetCommands;
+            answer = _localizer.localizations.notAuthorized;
             break;
           }
           List<String>? otherParts = match.group(2)?.split(' ');
@@ -79,17 +82,76 @@ class TwitchChatCommandServiceImpl implements TwitchChatCommandService {
           break;
 
         case 'quote':
-          String? key = match.group(2);
-          if (key == null) {
+          String? keyword = match.group(2);
+          if (keyword == null) {
             // User's asking for a random quote //
             String? randomQuote = await _quoteService.getRandomQuote();
             if (randomQuote == null) {
               answer = _localizer.localizations.noQuoteAvailable;
+            } else {
+              answer = randomQuote;
+            }
+          } else {
+            // User's asking for a specific quote //
+            String? quote = await _quoteService.getQuote(keyword);
+            if (quote == null) {
+              answer = _localizer.localizations.quoteNotFound;
+            } else {
+              answer = quote;
             }
           }
           break;
 
+        case 'addquote':
+          String? keyword = match.group(2);
+          if (keyword == null) {
+            answer = _localizer.localizations.invalidCommandSyntax;
+            break;
+          }
+          String content = chatMessage.message.substring(1 + match.group(1)!.length + 1 + keyword.length + 1, chatMessage.message.length);
+          if (await _storageService.saveQuote(keyword, content)) {
+            String message = _localizer.localizations.quoteCorrectlySaved;
+            message = Localizer.getStringWithPlaceholders(message, [ "!quote $keyword" ]);
+            answer = message;
+          } else {
+            answer = _localizer.localizations.quoteNotSaved;
+          }
+
+          break;
+
+        case 'addcmd':
+          if (false == chatMessage.isFromStreamer) {
+            answer = _localizer.localizations.notAuthorized;
+            break;
+          }
+          String? key = match.group(2);
+          if (key == null) {
+            answer = _localizer.localizations.invalidCommandSyntax;
+            break;
+          }
+
+          String content = chatMessage.message.substring(1 + match.group(1)!.length + 1 + key.length + 1, chatMessage.message.length);
+          if (content.isEmpty) {
+            answer = _localizer.localizations.invalidCommandSyntax;
+            break;
+          }
+          CustomCommand customCommand = CustomCommand(key, content);
+          if (await _storageService.saveCustomCommand(customCommand)) {
+            answer = _localizer.localizations.customCommandCorrectlySaved;
+          } else {
+            answer = _localizer.localizations.customCommandNotSaved;
+          }
+          break;
+
         default:
+          if (commandKeyword == null) {
+            break;
+          }
+          CustomCommand? customCommand = await _storageService.getCustomCommand(commandKeyword);
+          if (customCommand == null) {
+            break;
+          }
+          answer = customCommand.content;
           break;
       }
 

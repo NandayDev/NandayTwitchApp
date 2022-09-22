@@ -1,5 +1,6 @@
 import 'package:nanday_twitch_app/models/twitch_notification.dart';
 import 'package:nanday_twitch_app/services/event_service.dart';
+import 'package:nanday_twitch_app/services/localizer.dart';
 import 'package:nanday_twitch_app/services/twitch_chat_service.dart';
 
 abstract class TwitchThanker {
@@ -7,11 +8,11 @@ abstract class TwitchThanker {
 }
 
 class TwitchThankerImpl implements TwitchThanker {
-
-  TwitchThankerImpl(this._eventService, this._twitchChatService);
+  TwitchThankerImpl(this._eventService, this._twitchChatService, this._localizer);
 
   final EventService _eventService;
   final TwitchChatService _twitchChatService;
+  final Localizer _localizer;
 
   @override
   Future initialize() async {
@@ -22,25 +23,36 @@ class TwitchThankerImpl implements TwitchThanker {
   void _onNotificationReceived(TwitchNotification notification) {
     switch (notification.notificationType) {
       case TwitchNotificationType.NEW_FOLLOWER:
-        _twitchChatService.sendChatMessage('New follower! Thank you ${notification.username} for joining this fellowship through the dark lands!');
+        String message = _localizer.localizations.newFollowerThank;
+        message = Localizer.getStringWithPlaceholders(message, [notification.username]);
+        _twitchChatService.sendChatMessage(message);
         break;
       case TwitchNotificationType.SUBSCRIBE:
-        _twitchChatService.sendChatMessage('Wow! Thank you ${notification.username} for financing this impossible journey!');
+        String message = _localizer.localizations.newSubscriberThank;
+        message = Localizer.getStringWithPlaceholders(message, [notification.username]);
+        _twitchChatService.sendChatMessage(message);
         break;
       case TwitchNotificationType.RESUBSCRIBE:
-        _twitchChatService.sendChatMessage('Hooray! Thank you ${notification.username} for keeping the parrots well fed!');
+        String message = _localizer.localizations.resubscriberThank;
+        message = Localizer.getStringWithPlaceholders(message, [notification.username]);
+        _twitchChatService.sendChatMessage(message);
         break;
       case TwitchNotificationType.SUBSCRIPTION_GIFT:
       case TwitchNotificationType.SUBSCRIPTION_GIFT_ANON:
-        _twitchChatService.sendChatMessage('Santa is coming! Thank you ${notification.username} for keeping this infernal machine going!');
+        String message = _localizer.localizations.subscriptionGiftThank;
+        message = Localizer.getStringWithPlaceholders(message, [notification.username]);
+        _twitchChatService.sendChatMessage(message);
         break;
       case TwitchNotificationType.RAID:
         TwitchRaidNotification raidNotification = notification as TwitchRaidNotification;
+        String message;
         if (raidNotification.raidersCount > 4) {
-          _twitchChatService.sendChatMessage('Wow, so many people! Thank you ${notification.username} for joining the dark side of programming!');
+          message = _localizer.localizations.bigRaidThank;
         } else {
-          _twitchChatService.sendChatMessage('RAID INCOMING! Thank you ${notification.username} for joining the dark side of programming!');
+          message = _localizer.localizations.smallRaidThank;
         }
+        message = Localizer.getStringWithPlaceholders(message, [notification.username]);
+        _twitchChatService.sendChatMessage(message);
         break;
     }
   }
