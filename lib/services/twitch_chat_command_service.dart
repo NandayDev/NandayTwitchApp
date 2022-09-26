@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:nanday_twitch_app/models/command.dart';
 import 'package:nanday_twitch_app/services/event_service.dart';
 import 'package:nanday_twitch_app/services/localizer.dart';
+import 'package:nanday_twitch_app/services/logger_service.dart';
 import 'package:nanday_twitch_app/services/persistent_storage_service.dart';
 import 'package:nanday_twitch_app/services/quotes_service.dart';
 import 'package:nanday_twitch_app/services/twitch_chat_service.dart';
@@ -13,13 +14,14 @@ abstract class TwitchChatCommandService {
 }
 
 class TwitchChatCommandServiceImpl implements TwitchChatCommandService {
-  TwitchChatCommandServiceImpl(this._twitchChatService, this._eventService, this._storageService, this._quoteService, this._localizer);
+  TwitchChatCommandServiceImpl(this._twitchChatService, this._eventService, this._storageService, this._quoteService, this._localizer, this._loggerService);
 
   final EventService _eventService;
   final TwitchChatService _twitchChatService;
   final PersistentStorageService _storageService;
   final QuoteService _quoteService;
   final Localizer _localizer;
+  final LoggerService _loggerService;
 
   final HashSet<String> _greetedUsers = HashSet();
 
@@ -149,6 +151,7 @@ class TwitchChatCommandServiceImpl implements TwitchChatCommandService {
           }
           CustomCommand? customCommand = await _storageService.getCustomCommand(commandKeyword);
           if (customCommand == null) {
+            _loggerService.d("_handleCommandIfPresent: custom command with keyword $commandKeyword not found");
             break;
           }
           answer = customCommand.content;

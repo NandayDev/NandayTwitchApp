@@ -47,7 +47,7 @@ class NandayDependencyInjector {
         .map<PersistentStorageService>((i) => PersistentStorageServiceImpl(i.get()), isSingleton: true)
         .map<BroadcastMessagesService>((i) => BroadcastMessagesServiceImpl(i.get(), i.get(), i.get(), i.get()), isSingleton: true)
         .map<LoggerService>((i) => LoggerServiceImpl(), isSingleton: true)
-        .map<TwitchChatCommandService>((i) => TwitchChatCommandServiceImpl(i.get(), i.get(), i.get(), i.get(), i.get()), isSingleton: true)
+        .map<TwitchChatCommandService>((i) => TwitchChatCommandServiceImpl(i.get(), i.get(), i.get(), i.get(), i.get(), i.get()), isSingleton: true)
         .map<TwitchFollowerPoller>((i) => TwitchFollowerPollerImpl(i.get(), i.get(), i.get(), i.get(), i.get()), isSingleton: true)
         .map<TwitchThanker>((i) => TwitchThankerImpl(i.get(), i.get(), i.get()), isSingleton: true)
         .map<SoundService>((i) => SoundServiceImpl(i.get(), i.get()), isSingleton: true)

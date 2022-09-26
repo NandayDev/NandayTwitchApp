@@ -189,7 +189,7 @@ class PersistentStorageServiceImpl implements PersistentStorageService {
   Future<String?> getQuote(String key) async {
     Database database = await _getDatabase();
     List<Map<String, Object?>> queryResult =
-        await database.query(_QUOTES_TABLE_NAME, columns: [_QUOTE_VALUE], where: '$_QUOTE_PROFILE_ID = $_profileId AND $_QUOTE_KEY = "$key"');
+        await database.query(_QUOTES_TABLE_NAME, columns: [_QUOTE_VALUE], where: "$_QUOTE_PROFILE_ID = $_profileId AND $_QUOTE_KEY = '$key'");
     return _firstQueryResultOrNull<String>(queryResult, _QUOTE_VALUE);
   }
 
@@ -208,17 +208,22 @@ class PersistentStorageServiceImpl implements PersistentStorageService {
 
   @override
   Future<CustomCommand?> getCustomCommand(String keyword) async {
-    Database database = await _getDatabase();
-    List<Map<String, Object?>> queryResult = await database.query(
-        _CUSTOM_COMMANDS_TABLE_NAME,
-        columns: [_CUSTOM_COMMAND_CONTENT],
-        where: '$_CUSTOM_COMMAND_PROFILE_ID = $_profileId AND $_CUSTOM_COMMAND_KEYWORD = "$keyword"'
-    );
-    String? content = _firstQueryResultOrNull<String>(queryResult, _CUSTOM_COMMAND_CONTENT);
-    if (content == null) {
-      return null;
+    try {
+      Database database = await _getDatabase();
+      List<Map<String, Object?>> queryResult = await database.query(
+          _CUSTOM_COMMANDS_TABLE_NAME,
+          columns: [_CUSTOM_COMMAND_CONTENT],
+          where: "$_CUSTOM_COMMAND_PROFILE_ID = $_profileId AND $_CUSTOM_COMMAND_KEYWORD = '$keyword'"
+      );
+      String? content = _firstQueryResultOrNull<String>(queryResult, _CUSTOM_COMMAND_CONTENT);
+      if (content == null) {
+        return null;
+      }
+      return CustomCommand(keyword, content);
+    } catch (e) {
+      _loggerService.e("getCustomCommand - failed: ${e.toString()}");
     }
-    return CustomCommand(keyword, content);
+    return null;
   }
 
   @override
