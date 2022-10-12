@@ -14,6 +14,7 @@ Currently running on Windows only. Planning to add MacOS, and maybe Linux, later
 - [x] "Quotes"
   - [x] Saving
   - [x] Displaying
+- [x] On-demand countdown
 - [ ] List of users following my stream
   - [ ] Bots should be in a separate list (https://twitchinsights.net/bots)
 - [ ] Sound effects playing, with the possibility to add more

@@ -2,6 +2,7 @@ import 'dart:collection';
 
 import 'package:intl/intl.dart';
 import 'package:nanday_twitch_app/models/command.dart';
+import 'package:nanday_twitch_app/services/countdown_service.dart';
 import 'package:nanday_twitch_app/services/event_service.dart';
 import 'package:nanday_twitch_app/services/localizer.dart';
 import 'package:nanday_twitch_app/services/logger_service.dart';
@@ -14,11 +15,12 @@ abstract class TwitchChatCommandService {
 }
 
 class TwitchChatCommandServiceImpl implements TwitchChatCommandService {
-  TwitchChatCommandServiceImpl(this._twitchChatService, this._eventService, this._storageService, this._quoteService, this._localizer, this._loggerService);
+  TwitchChatCommandServiceImpl(this._twitchChatService, this._eventService, this._storageService, this._quoteService, this._localizer, this._loggerService, this._countdownService);
 
   final EventService _eventService;
   final TwitchChatService _twitchChatService;
   final PersistentStorageService _storageService;
+  final CountdownService _countdownService;
   final QuoteService _quoteService;
   final Localizer _localizer;
   final LoggerService _loggerService;
@@ -145,6 +147,27 @@ class TwitchChatCommandServiceImpl implements TwitchChatCommandService {
           }
           break;
 
+        case 'countdown':
+          if (false == chatMessage.isFromStreamer) {
+            answer = _localizer.localizations.notAuthorized;
+            break;
+          }
+          String? countdownDurationString = match.group(2);
+          if (countdownDurationString == null) {
+            _loggerService.e("countdownDurationString is null: group not found");
+            answer = _localizer.localizations.invalidCommandSyntax;
+            break;
+          }
+          Duration? countdownDuration = _countdownService.parseCountdownDurationString(countdownDurationString);
+          if (countdownDuration == null) {
+            _loggerService.e("countdownDuration is null: syntax of $countdownDurationString is invalid");
+            answer = _localizer.localizations.invalidCommandSyntax;
+            break;
+          }
+          _startCountdown(countdownDuration);
+          answer = _localizer.localizations.countdownStarted;
+          break;
+
         default:
           if (commandKeyword == null) {
             break;
@@ -167,5 +190,11 @@ class TwitchChatCommandServiceImpl implements TwitchChatCommandService {
     }
 
     return false;
+  }
+
+  void _startCountdown(Duration countdownDuration) async {
+    _countdownService.awaitCountdown(countdownDuration);
+    String chatMessage = Localizer.getStringWithPlaceholders(_localizer.localizations.countdownTimerIsUp, [ countdownDuration.toString() ]);
+    _twitchChatService.sendChatMessage(chatMessage);
   }
 }

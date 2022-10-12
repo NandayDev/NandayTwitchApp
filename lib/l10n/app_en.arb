@@ -20,5 +20,8 @@
   "quoteNotSaved": "Quote wasn't saved successfully. Try again.",
   "unrecognizedCommand": "Unrecognized command. Sorry!",
   "customCommandCorrectlySaved": "Custom command correctly saved!",
-  "customCommandNotSaved": "Custom command couldn't be saved. Try again."
+  "customCommandNotSaved": "Custom command couldn't be saved. Try again.",
+
+  "countdownStarted": "Countdown STARTED!",
+  "countdownTimerIsUp": "Countdown timer is UP! {0} have passed!"
 }
