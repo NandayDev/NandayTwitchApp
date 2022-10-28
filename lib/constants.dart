@@ -2,6 +2,7 @@
 
 import 'dart:io';
 
+import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 
 class Constants {
@@ -26,6 +27,7 @@ String? _applicationDataDirectory;
 Future<String> getApplicationDataDirectory() async {
   if (_applicationDataDirectory == null) {
    // var directory = await getApplicationSupportDirectory();
+    WidgetsFlutterBinding.ensureInitialized();
     var directory = await getApplicationDocumentsDirectory();
     _applicationDataDirectory = "${directory.path}\\NandayTwitchBot";
     await Directory(_applicationDataDirectory!).create(recursive: true);
