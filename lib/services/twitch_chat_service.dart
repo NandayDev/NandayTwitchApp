@@ -7,7 +7,7 @@ import 'package:nanday_twitch_app/services/event_service.dart';
 import 'package:nanday_twitch_app/services/localizer.dart';
 import 'package:nanday_twitch_app/services/logger_service.dart';
 import 'package:nanday_twitch_app/services/persistent_storage_service.dart';
-import 'package:nanday_twitch_app/services/twitch_authentication_service.dart';
+import 'package:nanday_twitch_app/services/session_repository.dart';
 import 'package:web_socket_channel/io.dart';
 
 abstract class TwitchChatService {
@@ -38,11 +38,11 @@ class TwitchChatMessage {
 }
 
 class TwitchChatServiceImpl implements TwitchChatService {
-  TwitchChatServiceImpl(this._logger, this._eventService, this._authenticationService, this._storageService, this._localizer);
+  TwitchChatServiceImpl(this._logger, this._eventService, this._sessionRepository, this._storageService, this._localizer);
 
   final LoggerService _logger;
   final EventService _eventService;
-  final TwitchAuthenticationService _authenticationService;
+  final SessionRepository _sessionRepository;
   final PersistentStorageService _storageService;
   final Localizer _localizer;
 
@@ -65,7 +65,7 @@ class TwitchChatServiceImpl implements TwitchChatService {
     channel!.stream.listen(_parseChannelStreamMessages);
 
     channel!.sink.add('CAP REQ :twitch.tv/membership twitch.tv/tags twitch.tv/commands');
-    channel!.sink.add('PASS oauth:${_authenticationService.accessToken!}');
+    channel!.sink.add('PASS oauth:${_sessionRepository.accessToken}');
     channel!.sink.add('NICK ${_storageService.currentProfile!.botUsername}');
 
     int retries = 0;
@@ -86,7 +86,7 @@ class TwitchChatServiceImpl implements TwitchChatService {
       if (!_sentHelloMessage) {
         _sentHelloMessage = true;
         String message = _localizer.localizations.botGreeting;
-        message = Localizer.getStringWithPlaceholders(message, [ _storageService.currentProfile!.botUsername ]);
+        message = Localizer.getStringWithPlaceholders(message, [_storageService.currentProfile!.botUsername]);
         sendChatMessage(message);
       }
     }

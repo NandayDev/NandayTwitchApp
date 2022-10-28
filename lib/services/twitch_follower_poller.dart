@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:nanday_twitch_app/models/twitch_notification.dart';
 import 'package:nanday_twitch_app/services/event_service.dart';
 import 'package:nanday_twitch_app/services/logger_service.dart';
-import 'package:nanday_twitch_app/services/twitch_authentication_service.dart';
+import 'package:nanday_twitch_app/services/session_repository.dart';
 import 'package:nanday_twitch_app/services/twitch_keys_reader.dart';
 
 abstract class TwitchFollowerPoller {
@@ -13,10 +13,10 @@ abstract class TwitchFollowerPoller {
 }
 
 class TwitchFollowerPollerImpl implements TwitchFollowerPoller {
-  TwitchFollowerPollerImpl(this._twitchKeysReader, this._authenticationService, this._loggerService, this._eventService);
+  TwitchFollowerPollerImpl(this._twitchKeysReader, this._sessionRepository, this._loggerService, this._eventService);
 
   final TwitchKeysReader _twitchKeysReader;
-  final TwitchAuthenticationService _authenticationService;
+  final SessionRepository _sessionRepository;
   final LoggerService _loggerService;
   final EventService _eventService;
   final HashMap<String, String> _currentFollowers = HashMap();
@@ -24,16 +24,16 @@ class TwitchFollowerPollerImpl implements TwitchFollowerPoller {
   @override
   Future initialize() async {
     TwitchKeys keys = await _twitchKeysReader.getTwitchKeys();
-    Map<String, String> headers = {'Authorization': 'Bearer ${_authenticationService.accessToken!}', 'Client-Id': keys.applicationClientId};
+    Map<String, String> headers = {'Authorization': 'Bearer ${_sessionRepository.accessToken}', 'Client-Id': keys.applicationClientId};
 
-    Uri getUsersFollowsEndpoint = Uri.parse('https://api.twitch.tv/helix/users/follows?to_id=${_authenticationService.userId!}');
+    Uri getUsersFollowsEndpoint = Uri.parse('https://api.twitch.tv/helix/users/follows?to_id=${_sessionRepository.userId}');
 
     await _pollUsersFollowsEndpoint(getUsersFollowsEndpoint, headers, false);
     _startContinuousUsersPolling(getUsersFollowsEndpoint, headers);
   }
 
   void _startContinuousUsersPolling(Uri getUsersFollowsEndpoint, Map<String, String> headers) async {
-    Duration pollIntervalDuration = const Duration(seconds: 5);
+    Duration pollIntervalDuration = const Duration(seconds: 10);
     while (true) {
       await Future.delayed(pollIntervalDuration);
       _pollUsersFollowsEndpoint(getUsersFollowsEndpoint, headers, true);

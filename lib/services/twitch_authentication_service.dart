@@ -1,14 +1,15 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
 import 'package:nanday_twitch_app/services/logger_service.dart';
 import 'package:nanday_twitch_app/services/persistent_storage_service.dart';
+import 'package:nanday_twitch_app/services/session_repository.dart';
 import 'package:nanday_twitch_app/services/twitch_keys_reader.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:url_launcher/url_launcher.dart';
-import 'package:http/http.dart' as http;
-import 'dart:io';
 
 abstract class TwitchAuthenticationService {
   ///
@@ -20,41 +21,20 @@ abstract class TwitchAuthenticationService {
   /// Generates a map with the headers for the Twitch APIs
   ///
   Map<String, String> generateApiHeaders();
-
-  ///
-  /// Access token provided by the authentication method. Null if not obtained yet
-  ///
-  String? accessToken;
-
-  ///
-  /// Twitch ID of the user
-  ///
-  int? userId;
 }
 
 class TwitchAuthenticationServiceImpl implements TwitchAuthenticationService {
-
-  TwitchAuthenticationServiceImpl(this._twitchKeysReader, this._storageService, this._loggerService);
+  TwitchAuthenticationServiceImpl(this._twitchKeysReader, this._storageService, this._sessionRepository, this._loggerService);
 
   final TwitchKeysReader _twitchKeysReader;
   final PersistentStorageService _storageService;
+  final SessionRepository _sessionRepository;
   final LoggerService _loggerService;
-
-  @override
-  String? accessToken;
-
-  @override
-  int? userId;
 
   late TwitchKeys _keys;
 
   @override
   Future<TwitchAuthenticationResult> authenticate(int redirectPort, List<String> scopes) async {
-
-    if (accessToken != null) {
-      return TwitchAuthenticationResult(token: accessToken);
-    }
-
     TwitchAuthenticationResult? result;
 
     var handler = const Pipeline().addMiddleware(logRequests()).addHandler((request) async {
@@ -74,19 +54,19 @@ class TwitchAuthenticationServiceImpl implements TwitchAuthenticationService {
     String clientId = _keys.applicationClientId;
 
     Uri url = Uri(
-        scheme: 'https',
-        host: 'id.twitch.tv',
-        pathSegments: <String>['oauth2', 'authorize'],
-        queryParameters: {
-          'response_type': 'token',
-          'client_id': clientId,
-          'redirect_uri': 'http://localhost:$redirectPort',
-          'scope': scopes.join(' '),
-        },
+      scheme: 'https',
+      host: 'id.twitch.tv',
+      pathSegments: <String>['oauth2', 'authorize'],
+      queryParameters: {
+        'response_type': 'token',
+        'client_id': clientId,
+        'redirect_uri': 'http://localhost:$redirectPort',
+        'scope': scopes.join(' '),
+      },
     );
     String? browserExecutable = _storageService.currentProfile!.browserExecutable;
     if (browserExecutable != null) {
-      await Process.run(browserExecutable, [ url.toString() ]);
+      await Process.run(browserExecutable, [url.toString()]);
     } else {
       await launchUrl(url);
     }
@@ -104,16 +84,13 @@ class TwitchAuthenticationServiceImpl implements TwitchAuthenticationService {
     await server.close();
 
     if (result!.token != null) {
-      accessToken = result!.token;
+      _sessionRepository.accessToken = result!.token!;
     }
 
-    userId = await _getUserId(
-        _storageService.currentProfile!.channelName,
-        generateApiHeaders()
-    );
+    int? userId = await _getUserId(_storageService.currentProfile!.channelName, generateApiHeaders());
 
     if (userId == null) {
-      result = TwitchAuthenticationResult(error: "Couldn't get user id"); //TODO error handling for timeout
+      result = TwitchAuthenticationResult(error: "Couldn't get user id");
     }
 
     return result!;
@@ -121,18 +98,21 @@ class TwitchAuthenticationServiceImpl implements TwitchAuthenticationService {
 
   @override
   Map<String, String> generateApiHeaders() {
-    return {'Authorization': 'Bearer $accessToken', 'Client-Id': _keys.applicationClientId};
+    return {'Authorization': 'Bearer ${_sessionRepository.accessToken}', 'Client-Id': _keys.applicationClientId};
   }
 
   Future<int?> _getUserId(String userLogin, Map<String, String> headers) async {
     int retries = 0;
     while (retries < 3) {
       try {
-        http.Response response = await http.get(Uri.parse('https://api.twitch.tv/helix/users?$userLogin'), headers: headers);
+        http.Response response = await http.get(Uri.parse('https://api.twitch.tv/helix/users?login=$userLogin'), headers: headers);
         dynamic responseJson = jsonDecode(response.body);
         for (dynamic data in responseJson['data']) {
           _loggerService.d('Correctly fetched user id');
-          return int.parse(data['id']);
+          _sessionRepository.userId = int.parse(data['id']);
+          _sessionRepository.username = userLogin;
+          _sessionRepository.userDisplayName = data['display_name'];
+          return _sessionRepository.userId;
         }
         retries++;
         await Future.delayed(const Duration(seconds: 5));
@@ -151,5 +131,7 @@ class TwitchAuthenticationResult {
   final String? token;
   final String? error;
 
-  bool get hasError { return error != null; }
+  bool get hasError {
+    return error != null;
+  }
 }

@@ -23,5 +23,7 @@
   "customCommandNotSaved": "Custom command couldn't be saved. Try again.",
 
   "countdownStarted": "Countdown STARTED!",
-  "countdownTimerIsUp": "Countdown timer is UP! {0} have passed!"
+  "countdownTimerIsUp": "Countdown timer is UP! {0} have passed!",
+
+  "channelOnlineDiscordMessage": "{0} is online! Join him at {1}"
 }
