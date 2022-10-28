@@ -1,5 +1,7 @@
 import 'package:flutter_simple_dependency_injection/injector.dart';
 import 'package:nanday_twitch_app/services/broadcast_messages_service.dart';
+import 'package:nanday_twitch_app/services/countdown_service.dart';
+import 'package:nanday_twitch_app/services/discord_bot.dart';
 import 'package:nanday_twitch_app/services/event_service.dart';
 import 'package:nanday_twitch_app/services/localizer.dart';
 import 'package:nanday_twitch_app/services/logger_service.dart';
@@ -12,6 +14,7 @@ import 'package:nanday_twitch_app/services/twitch_chat_command_service.dart';
 import 'package:nanday_twitch_app/services/twitch_chat_service.dart';
 import 'package:nanday_twitch_app/services/twitch_follower_poller.dart';
 import 'package:nanday_twitch_app/services/twitch_keys_reader.dart';
+import 'package:nanday_twitch_app/services/twitch_stream_poller.dart';
 import 'package:nanday_twitch_app/services/twitch_thanker.dart';
 import 'package:nanday_twitch_app/ui/login/login_page_view_model.dart';
 import 'package:nanday_twitch_app/ui/login/profile_dialog_view_model.dart';
@@ -41,24 +44,27 @@ class NandayDependencyInjector {
     // SERVICES //
         .map<EventService>((i) => EventServiceImpl(), isSingleton: true)
         .map<TwitchKeysReader>((i) => TwitchKeysReader(), isSingleton: true)
-        .map<TwitchAuthenticationService>((i) => TwitchAuthenticationServiceImpl(i.get(), i.get()), isSingleton: true)
+        .map<TwitchAuthenticationService>((i) => TwitchAuthenticationServiceImpl(i.get(), i.get(), i.get()), isSingleton: true)
         .map<TwitchChatService>((i) => TwitchChatServiceImpl(i.get(), i.get(), i.get(), i.get(), i.get()), isSingleton: true)
         .map<TextToSpeechService>((i) => TextToSpeechService(), isSingleton: true)
         .map<PersistentStorageService>((i) => PersistentStorageServiceImpl(i.get()), isSingleton: true)
         .map<BroadcastMessagesService>((i) => BroadcastMessagesServiceImpl(i.get(), i.get(), i.get(), i.get()), isSingleton: true)
         .map<LoggerService>((i) => LoggerServiceImpl(), isSingleton: true)
-        .map<TwitchChatCommandService>((i) => TwitchChatCommandServiceImpl(i.get(), i.get(), i.get(), i.get(), i.get(), i.get()), isSingleton: true)
-        .map<TwitchFollowerPoller>((i) => TwitchFollowerPollerImpl(i.get(), i.get(), i.get(), i.get(), i.get()), isSingleton: true)
+        .map<TwitchChatCommandService>((i) => TwitchChatCommandServiceImpl(i.get(), i.get(), i.get(), i.get(), i.get(), i.get(), i.get()), isSingleton: true)
+        .map<TwitchFollowerPoller>((i) => TwitchFollowerPollerImpl(i.get(), i.get(), i.get(), i.get()), isSingleton: true)
         .map<TwitchThanker>((i) => TwitchThankerImpl(i.get(), i.get(), i.get()), isSingleton: true)
         .map<SoundService>((i) => SoundServiceImpl(i.get(), i.get()), isSingleton: true)
         .map<QuoteService>((i) => QuoteServiceImpl(i.get()), isSingleton: true)
         .map<Localizer>((i) => LocalizerImpl(i.get()), isSingleton: true)
+        .map<CountdownService>((i) => CountdownServiceImpl(), isSingleton: true)
+        .map<DiscordBot>((i) => NyxxDiscordBot(i.get(), i.get()), isSingleton: true)
+        .map<TwitchStreamPoller>((i) => TwitchStreamPollerImpl(i.get(), i.get(), i.get(), i.get()), isSingleton: true)
 
     // VIEW MODELS //
         // Login //
         .map<LoginPageViewModel>((i) => LoginPageViewModel(i.get(), i.get(), i.get()))
         // Main page //
-        .map((i) => MainPageViewModel(i.get(), i.get(), i.get(), i.get()))
+        .map((i) => MainPageViewModel(i.get(), i.get(), i.get(), i.get(), i.get()))
         .mapWithParams<ChatMessageViewModel>((i, additionalParameters) =>
           ChatMessageViewModel(i.get(), additionalParameters[ChatMessageViewModel.chatMessageParamName]))
         // Broadcast messages //

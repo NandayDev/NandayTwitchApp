@@ -66,6 +66,8 @@ dependencies:
   sqlite3_flutter_libs: ^0.5.10
   # File picker #
   file_picker: ^5.2.0
+  # Discord #
+  nyxx: ^4.1.1
 
 dev_dependencies:
   flutter_test:

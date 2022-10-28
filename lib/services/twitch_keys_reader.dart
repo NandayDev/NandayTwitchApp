@@ -10,7 +10,7 @@ class TwitchKeysReader {
     if (_twitchKeys == null) {
       String twitchKeysFileContent = await rootBundle.loadString('assets/keys/twitch_keys.json');
       var json = jsonDecode(twitchKeysFileContent);
-      _twitchKeys = TwitchKeys(json['applicationClientId']);
+      _twitchKeys = TwitchKeys(json['applicationClientId'], json['discordBotToken']);
     }
     return _twitchKeys!;
   }
@@ -18,8 +18,8 @@ class TwitchKeysReader {
 
 class TwitchKeys {
 
-  TwitchKeys(this.applicationClientId);
+  TwitchKeys(this.applicationClientId, this.discordBotToken);
 
   final String applicationClientId;
-
+  final String discordBotToken;
 }

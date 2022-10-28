@@ -4,25 +4,38 @@ import 'package:nanday_twitch_app/services/twitch_chat_service.dart';
 abstract class EventService {
   // Chat messages //
   void subscribeToChatMessageReceivedEvent(Function(TwitchChatMessage) function);
+
   void unsubscribeToChatMessageReceivedEvent(Function(TwitchChatMessage) function);
+
   void chatMessageReceived(TwitchChatMessage chatMessage);
 
   // Notifications //
   void subscribeToNotificationReceivedEvent(Function(TwitchNotification) function);
+
   void unsubscribeToNotificationReceivedEvent(Function(TwitchNotification) function);
+
   void notificationReceived(TwitchNotification notification);
 
   // Broadcast messages //
   void subscribeToBroadcastMessagesChangedEvent(Function(List<String>) function);
+
   void unsubscribeToBroadcastMessagesChangedEvent(Function(List<String>) function);
+
   void broadcastMessagesChanged(List<String> messages);
+
+  // Channel online/offline //
+  void subscribeToChannelOnlineChangedEvent(Function(bool) function);
+
+  void unsubscribeToChannelOnlineChangedEvent(Function(bool) function);
+
+  void channelOnlineChanged(bool isOnline);
 }
 
 class EventServiceImpl implements EventService {
-
   final List<Function(TwitchChatMessage)> _chatMessagesFunctions = [];
   final List<Function(TwitchNotification)> _notificationFunctions = [];
   final List<Function(List<String>)> _broadcastMessagesFunctions = [];
+  final List<Function(bool)> _channelOnlineFunctions = [];
 
   @override
   void subscribeToChatMessageReceivedEvent(Function(TwitchChatMessage) function) {
@@ -55,7 +68,7 @@ class EventServiceImpl implements EventService {
   }
 
   void _triggerEvent<T>(List<Function(T)> functions, T parameter) {
-    for(var function in functions) {
+    for (var function in functions) {
       function(parameter);
     }
   }
@@ -73,5 +86,20 @@ class EventServiceImpl implements EventService {
   @override
   void broadcastMessagesChanged(List<String> messages) {
     _triggerEvent(_broadcastMessagesFunctions, messages);
+  }
+
+  @override
+  void subscribeToChannelOnlineChangedEvent(Function(bool) function) {
+    _channelOnlineFunctions.add(function);
+  }
+
+  @override
+  void unsubscribeToChannelOnlineChangedEvent(Function(bool) function) {
+    _channelOnlineFunctions.remove(function);
+  }
+
+  @override
+  void channelOnlineChanged(bool isOnline) {
+    _triggerEvent(_channelOnlineFunctions, isOnline);
   }
 }

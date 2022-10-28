@@ -8,11 +8,12 @@ import 'package:nanday_twitch_app/services/twitch_authentication_service.dart';
 import 'package:nanday_twitch_app/services/twitch_chat_command_service.dart';
 import 'package:nanday_twitch_app/services/twitch_chat_service.dart';
 import 'package:nanday_twitch_app/services/twitch_follower_poller.dart';
+import 'package:nanday_twitch_app/services/twitch_stream_poller.dart';
 import 'package:nanday_twitch_app/services/twitch_thanker.dart';
 import 'package:nanday_twitch_app/ui/base/nanday_view_model.dart';
 
 class MainPageViewModel extends NandayViewModel {
-  MainPageViewModel(this._twitchChatService, this._textToSpeechService, this._preferencesService, this._eventService);
+  MainPageViewModel(this._twitchChatService, this._textToSpeechService, this._preferencesService, this._eventService, this._streamPoller);
 
   final List<TwitchChatMessage> chatMessages = [];
   bool isLoading = true;
@@ -24,10 +25,12 @@ class MainPageViewModel extends NandayViewModel {
   final TextToSpeechService _textToSpeechService;
   final PersistentStorageService _preferencesService;
   final EventService _eventService;
+  final TwitchStreamPoller _streamPoller;
 
   void initialize() async {
     await _initializeTwitchChat();
     await _getAvailableLanguages();
+    _streamPoller.startPollingTwitchStreams();
   }
 
   void setLanguage(String language) async {

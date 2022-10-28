@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nanday_twitch_app/services/discord_bot.dart';
 import 'package:nanday_twitch_app/services/nanday_dependency_injector.dart';
 import 'package:nanday_twitch_app/ui/main/broadcast_messages_dialog/broadcast_messages_dialog.dart';
 import 'package:nanday_twitch_app/ui/main/broadcast_messages_dialog/broadcast_messages_view_model.dart';
@@ -50,7 +51,10 @@ class _MainPageState extends State<MainPage> {
                   Padding(
                     padding: const EdgeInsets.only(right: 15.0),
                     child: viewModel.isLoadingLanguage ? const CircularProgressIndicator() : _createLanguagesDropDownButton(viewModel),
-                  )
+                  ),
+                  TextButton(onPressed: () {
+                    NandayDependencyInjector.instance.resolve<DiscordBot>().sendAnnouncement("Test!");
+                  }, child: Text("Test discord"))
                 ]),
                 Expanded(
                   child: chatMessages.isEmpty
