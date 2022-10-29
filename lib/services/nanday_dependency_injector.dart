@@ -22,6 +22,7 @@ import 'package:nanday_twitch_app/ui/login/profile_dialog_view_model.dart';
 import 'package:nanday_twitch_app/ui/main/broadcast_messages_dialog/broadcast_messages_view_model.dart';
 import 'package:nanday_twitch_app/ui/main/chat_message_view_model.dart';
 import 'package:nanday_twitch_app/ui/main/main_page_view_model.dart';
+import 'package:nanday_twitch_app/ui/main/online_message_dialog/online_message_dialog_view_model.dart';
 
 class NandayDependencyInjector {
   ///
@@ -71,6 +72,7 @@ class NandayDependencyInjector {
         .mapWithParams<ChatMessageViewModel>((i, additionalParameters) => ChatMessageViewModel(i.get(), additionalParameters[ChatMessageViewModel.chatMessageParamName]))
         // Broadcast messages //
         .map<BroadcastMessagesViewModel>((i) => BroadcastMessagesViewModel(i.get(), i.get()))
+        .map<OnlineMessageDialogViewModel>((i) => OnlineMessageDialogViewModel(i.get()))
         // Profile //
         .mapWithParams<ProfileDialogViewModel>((i, params) => ProfileDialogViewModel(i.get(), params[ProfileDialogViewModel.profileParamName]));
   }

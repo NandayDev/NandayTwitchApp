@@ -68,6 +68,8 @@ dependencies:
   file_picker: ^5.2.0
   # Discord #
   nyxx: ^4.1.1
+  # Tuples #
+  tuple: ^2.0.1
 
 dev_dependencies:
   flutter_test:

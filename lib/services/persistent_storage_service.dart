@@ -6,6 +6,7 @@ import 'package:nanday_twitch_app/models/profile.dart';
 import 'package:nanday_twitch_app/services/logger_service.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:tuple/tuple.dart';
 
 abstract class PersistentStorageService {
   /// Returns all profiles from the persistent storage
@@ -39,6 +40,11 @@ abstract class PersistentStorageService {
   Future<String> getWhatCommandContent(String defaultValue);
 
   Future<bool> setWhatCommandContent(String value);
+
+  // Starting and ending messages //
+  Future<Tuple2<String,String>> getGoesOnlineAndOfflineMessages(String defaultValue);
+
+  Future<bool> setGoesOnlineAndOfflineMessages(String startingMessage, String endingMessage);
 
   // Quotes //
   Future<String?> getRandomQuote();
@@ -174,6 +180,18 @@ class PersistentStorageServiceImpl implements PersistentStorageService {
   @override
   Future<bool> setWhatCommandContent(String value) {
     return _setSetting(_SETTING_KEY_WHAT_COMMAND_CONTENT, value);
+  }
+
+  @override
+  Future<Tuple2<String, String>> getGoesOnlineAndOfflineMessages(String defaultValue) async {
+    String startingMessage = await _getStringSetting(_SETTING_KEY_TWITCH_ONLINE_MESSAGE, defaultValue);
+    String endingMessage = await _getStringSetting(_SETTING_KEY_TWITCH_OFFLINE_MESSAGE, defaultValue);
+    return Tuple2(startingMessage, endingMessage);
+  }
+
+  @override
+  Future<bool> setGoesOnlineAndOfflineMessages(String onlineMessage, String offlineMessage) async {
+    return await _setSetting(_SETTING_KEY_TWITCH_ONLINE_MESSAGE, onlineMessage) && await _setSetting(_SETTING_KEY_TWITCH_OFFLINE_MESSAGE, offlineMessage);
   }
 
   @override
@@ -378,6 +396,8 @@ class PersistentStorageServiceImpl implements PersistentStorageService {
   static const String _SETTING_KEY_BROADCAST_DELAY = "broadcast_delay";
   static const String _SETTING_KEY_TTS_LANGUAGE = "tts_language";
   static const String _SETTING_KEY_WHAT_COMMAND_CONTENT = "what_command_content";
+  static const String _SETTING_KEY_TWITCH_ONLINE_MESSAGE = "twitch_online_message";
+  static const String _SETTING_KEY_TWITCH_OFFLINE_MESSAGE = "twitch_offline_message";
 
   static const String _QUOTES_TABLE_NAME = "quotes";
   static const String _QUOTE_PROFILE_ID = "profile_id";

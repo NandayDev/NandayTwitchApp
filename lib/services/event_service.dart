@@ -1,3 +1,4 @@
+import 'package:nanday_twitch_app/models/channel_online_info.dart';
 import 'package:nanday_twitch_app/models/twitch_notification.dart';
 import 'package:nanday_twitch_app/services/twitch_chat_service.dart';
 
@@ -24,18 +25,18 @@ abstract class EventService {
   void broadcastMessagesChanged(List<String> messages);
 
   // Channel online/offline //
-  void subscribeToChannelOnlineChangedEvent(Function(bool) function);
+  void subscribeToChannelOnlineChangedEvent(Function(ChannelOnlineInfo) function);
 
-  void unsubscribeToChannelOnlineChangedEvent(Function(bool) function);
+  void unsubscribeToChannelOnlineChangedEvent(Function(ChannelOnlineInfo) function);
 
-  void channelOnlineChanged(bool isOnline);
+  void channelOnlineChanged(ChannelOnlineInfo info);
 }
 
 class EventServiceImpl implements EventService {
   final List<Function(TwitchChatMessage)> _chatMessagesFunctions = [];
   final List<Function(TwitchNotification)> _notificationFunctions = [];
   final List<Function(List<String>)> _broadcastMessagesFunctions = [];
-  final List<Function(bool)> _channelOnlineFunctions = [];
+  final List<Function(ChannelOnlineInfo)> _channelOnlineFunctions = [];
 
   @override
   void subscribeToChatMessageReceivedEvent(Function(TwitchChatMessage) function) {
@@ -89,17 +90,17 @@ class EventServiceImpl implements EventService {
   }
 
   @override
-  void subscribeToChannelOnlineChangedEvent(Function(bool) function) {
+  void subscribeToChannelOnlineChangedEvent(Function(ChannelOnlineInfo) function) {
     _channelOnlineFunctions.add(function);
   }
 
   @override
-  void unsubscribeToChannelOnlineChangedEvent(Function(bool) function) {
+  void unsubscribeToChannelOnlineChangedEvent(Function(ChannelOnlineInfo) function) {
     _channelOnlineFunctions.remove(function);
   }
 
   @override
-  void channelOnlineChanged(bool isOnline) {
-    _triggerEvent(_channelOnlineFunctions, isOnline);
+  void channelOnlineChanged(ChannelOnlineInfo info) {
+    _triggerEvent(_channelOnlineFunctions, info);
   }
 }

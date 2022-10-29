@@ -5,6 +5,8 @@ import 'package:nanday_twitch_app/ui/main/broadcast_messages_dialog/broadcast_me
 import 'package:nanday_twitch_app/ui/main/chat_message_view_model.dart';
 import 'package:nanday_twitch_app/ui/main/chat_message_widget.dart';
 import 'package:nanday_twitch_app/ui/main/main_page_view_model.dart';
+import 'package:nanday_twitch_app/ui/main/online_message_dialog/online_message_dialog.dart';
+import 'package:nanday_twitch_app/ui/main/online_message_dialog/online_message_dialog_view_model.dart';
 import 'package:provider/provider.dart';
 
 class MainPage extends StatefulWidget {
@@ -40,7 +42,17 @@ class _MainPageState extends State<MainPage> {
                           child: const BroadcastMessagesDialog());
                     });
               },
-              icon: const Icon(Icons.settings))
+              icon: const Icon(Icons.settings)),
+              // Twitch online/offline messages //
+              IconButton(onPressed: () {
+                showDialog(
+                    context: context,
+                    builder: (context) {
+                      return ChangeNotifierProvider(
+                          create: (context) => NandayDependencyInjector.instance.resolve<OnlineMessageDialogViewModel>(),
+                          child: const OnlineMessageDialog());
+                    });
+              }, icon: const Icon(Icons.message))
         ])),
         body: viewModel.isLoading
             ? const Center(child: CircularProgressIndicator())

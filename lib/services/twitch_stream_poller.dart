@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:nanday_twitch_app/models/channel_online_info.dart';
 import 'package:nanday_twitch_app/services/event_service.dart';
 import 'package:nanday_twitch_app/services/logger_service.dart';
 import 'package:nanday_twitch_app/services/session_repository.dart';
@@ -21,14 +22,7 @@ class TwitchStreamPollerImpl implements TwitchStreamPoller {
   final EventService _eventService;
   final LoggerService _loggerService;
 
-  bool __lastOnlineStatus = false;
-
-  set _lastOnlineStatus(bool value) {
-    if (value != __lastOnlineStatus) {
-      __lastOnlineStatus = value;
-      _eventService.channelOnlineChanged(value);
-    }
-  }
+  bool _lastOnlineStatus = false;
 
   @override
   void startPollingTwitchStreams() async {
@@ -38,11 +32,23 @@ class TwitchStreamPollerImpl implements TwitchStreamPoller {
       try {
         http.Response response = await http.get(streamsEndpoint, headers: headers);
         dynamic responseJson = jsonDecode(response.body);
-        _lastOnlineStatus = (responseJson['data'] as List).isNotEmpty;
+        bool channelOnline = (responseJson['data'] as List).isNotEmpty;
+        String? title;
+        if (channelOnline) {
+          title = responseJson['data'][0]['title'];
+        }
+        _setLastOnlineStatus(channelOnline, title);
         await Future.delayed(const Duration(minutes: 1));
       } catch (e) {
         _loggerService.w(e.toString());
       }
+    }
+  }
+
+  void _setLastOnlineStatus(bool value, String? streamTitle) {
+    if (value != _lastOnlineStatus) {
+      _lastOnlineStatus = value;
+      _eventService.channelOnlineChanged(ChannelOnlineInfo(value, streamTitle));
     }
   }
 }

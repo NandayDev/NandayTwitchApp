@@ -46,14 +46,18 @@ class NyxxDiscordBot implements DiscordBot {
       }
     });
 
-    _eventService.subscribeToChannelOnlineChangedEvent((channelOnline) {
-      if (channelOnline) {
+    _eventService.subscribeToChannelOnlineChangedEvent((info) {
+      if (info.isStarted) {
+        // Twitch channel went online //
         sendAnnouncement(
             Localizer.getStringWithPlaceholders(
-                _localizer.localizations.channelOnlineDiscordMessage,
+                _localizer.localizations.channelOnlineDiscordMessage + " - " + (info.streamTitle ?? ""),
                 [ _sessionRepository.userDisplayName, 'https://www.twitch.tv/${_sessionRepository.username}']
             )
         );
+      } else {
+        // Twitch channel went offline //
+
       }
     });
 
