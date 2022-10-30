@@ -2,7 +2,6 @@ import 'package:nanday_twitch_app/services/persistent_storage_service.dart';
 import 'package:nanday_twitch_app/ui/base/nanday_view_model.dart';
 
 class OnlineMessageDialogViewModel extends NandayViewModel {
-
   OnlineMessageDialogViewModel(this._storageService);
 
   final PersistentStorageService _storageService;
@@ -24,5 +23,4 @@ class OnlineMessageDialogViewModel extends NandayViewModel {
   Future<bool> saveMessages() async {
     return _storageService.setGoesOnlineAndOfflineMessages(goesOnlineMessage, goesOfflineMessage);
   }
-
 }

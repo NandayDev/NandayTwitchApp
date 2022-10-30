@@ -15,7 +15,8 @@ abstract class TwitchChatCommandService {
 }
 
 class TwitchChatCommandServiceImpl implements TwitchChatCommandService {
-  TwitchChatCommandServiceImpl(this._twitchChatService, this._eventService, this._storageService, this._quoteService, this._localizer, this._loggerService, this._countdownService);
+  TwitchChatCommandServiceImpl(this._twitchChatService, this._eventService, this._storageService, this._quoteService, this._localizer,
+      this._loggerService, this._countdownService);
 
   final EventService _eventService;
   final TwitchChatService _twitchChatService;
@@ -115,7 +116,7 @@ class TwitchChatCommandServiceImpl implements TwitchChatCommandService {
           String content = chatMessage.message.substring(1 + match.group(1)!.length + 1 + keyword.length + 1, chatMessage.message.length);
           if (await _storageService.saveQuote(keyword, content)) {
             String message = _localizer.localizations.quoteCorrectlySaved;
-            message = Localizer.getStringWithPlaceholders(message, [ "!quote $keyword" ]);
+            message = Localizer.getStringWithPlaceholders(message, ["!quote $keyword"]);
             answer = message;
           } else {
             answer = _localizer.localizations.quoteNotSaved;
@@ -194,7 +195,7 @@ class TwitchChatCommandServiceImpl implements TwitchChatCommandService {
 
   void _startCountdown(Duration countdownDuration) async {
     _countdownService.awaitCountdown(countdownDuration);
-    String chatMessage = Localizer.getStringWithPlaceholders(_localizer.localizations.countdownTimerIsUp, [ countdownDuration.toString() ]);
+    String chatMessage = Localizer.getStringWithPlaceholders(_localizer.localizations.countdownTimerIsUp, [countdownDuration.toString()]);
     _twitchChatService.sendChatMessage(chatMessage);
   }
 }

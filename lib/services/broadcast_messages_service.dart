@@ -1,11 +1,9 @@
-import 'package:nanday_twitch_app/constants.dart';
 import 'package:nanday_twitch_app/services/event_service.dart';
 import 'package:nanday_twitch_app/services/logger_service.dart';
 import 'package:nanday_twitch_app/services/persistent_storage_service.dart';
 import 'package:nanday_twitch_app/services/twitch_chat_service.dart';
 
 abstract class BroadcastMessagesService {
-
   Future initialize();
 }
 

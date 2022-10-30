@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 
 class TwitchKeysReader {
-
   TwitchKeys? _twitchKeys;
 
   Future<TwitchKeys> getTwitchKeys() async {
@@ -18,7 +17,6 @@ class TwitchKeysReader {
 }
 
 class TwitchKeys {
-
   TwitchKeys(this.applicationClientId, this.discordBotToken, this.discordChannelIds);
 
   final String applicationClientId;

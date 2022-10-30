@@ -1,12 +1,10 @@
 abstract class CountdownService {
-
   Duration? parseCountdownDurationString(String durationString);
 
   Future awaitCountdown(Duration duration);
 }
 
 class CountdownServiceImpl implements CountdownService {
-
   static final RegExp _regExp = RegExp("(\\d{1,2}h)?(\\d{1,2}m)?(\\d{1,2}s)?");
 
   @override

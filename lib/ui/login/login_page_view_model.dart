@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:nanday_twitch_app/constants.dart';
 import 'package:nanday_twitch_app/models/profile.dart';
 import 'package:nanday_twitch_app/models/result.dart';
@@ -8,9 +6,7 @@ import 'package:nanday_twitch_app/services/persistent_storage_service.dart';
 import 'package:nanday_twitch_app/services/twitch_authentication_service.dart';
 import 'package:nanday_twitch_app/ui/base/nanday_view_model.dart';
 
-
 class LoginPageViewModel extends NandayViewModel {
-
   LoginPageViewModel(this._storageService, this._authenticationService, this._loggerService);
 
   final PersistentStorageService _storageService;
@@ -23,8 +19,12 @@ class LoginPageViewModel extends NandayViewModel {
   List<Profile> profiles = [];
 
   Profile? _selectedProfile;
-  Profile? get selectedProfile { return _selectedProfile; }
-  set selectedProfile (Profile? profile) {
+
+  Profile? get selectedProfile {
+    return _selectedProfile;
+  }
+
+  set selectedProfile(Profile? profile) {
     _selectedProfile = profile;
     _storageService.currentProfile = profile;
     notifyPropertyChanged(() {
@@ -33,7 +33,10 @@ class LoginPageViewModel extends NandayViewModel {
   }
 
   EmptyResult<String>? _authenticationResult;
-  EmptyResult<String>? get authenticationResult { return _authenticationResult; }
+
+  EmptyResult<String>? get authenticationResult {
+    return _authenticationResult;
+  }
 
   void getProfiles() async {
     _loggerService.d("Getting profiles");

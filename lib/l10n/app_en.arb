@@ -1,14 +1,12 @@
 {
   "botGreeting": "Hi everyone! My name is {0} and I'm here to disturb your stream.",
   "welcomeMessage": "Welcome {0}! Have a seat!",
-
   "newFollowerThank": "New follower! Thank you {0} for joining this fellowship through the dark lands!",
   "newSubscriberThank": "Wow! Thank you {0} for financing this impossible journey!",
   "resubscriberThank": "Hooray! Thank you {0} for keeping the parrots well fed!",
   "subscriptionGiftThank": "Santa is coming! Thank you {0} for keeping this infernal machine going!",
   "bigRaidThank": "Wow, so many people! Thank you {0} for joining the dark side of programming!",
   "smallRaidThank": "RAID INCOMING! Thank you {0} for joining the dark side of programming!",
-
   "whatMessageNotSet": "Sorry, \"what\" message not set. Ask the streamer to set it via !editcmd",
   "notAuthorized": "You're not authorized. Lol.",
   "invalidCommandSyntax": "Invalid syntax. Check your message and try again.",
@@ -21,9 +19,8 @@
   "unrecognizedCommand": "Unrecognized command. Sorry!",
   "customCommandCorrectlySaved": "Custom command correctly saved!",
   "customCommandNotSaved": "Custom command couldn't be saved. Try again.",
-
   "countdownStarted": "Countdown STARTED!",
   "countdownTimerIsUp": "Countdown timer is UP! {0} have passed!",
-
-  "channelOnlineDiscordMessage": "{0} is online! Join him at {1}"
+  "channelOnlineDiscordMessage": "{0} is online! Join him at {1}",
+  "channelOfflineDiscordMessageWithNextStream": "{0}'s stream is over. Don't miss out the next stream starting {1}!"
 }

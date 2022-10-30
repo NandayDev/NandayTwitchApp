@@ -1,5 +1,4 @@
 class ChannelOnlineInfo {
-
   ChannelOnlineInfo(this.isStarted, this.streamTitle);
 
   ///

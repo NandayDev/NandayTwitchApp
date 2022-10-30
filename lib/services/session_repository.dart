@@ -2,7 +2,6 @@
 /// Session data shared across the application
 ///
 class SessionRepository {
-
   ///
   /// Streamer's username
   ///
@@ -23,4 +22,3 @@ class SessionRepository {
   ///
   late int userId;
 }
-

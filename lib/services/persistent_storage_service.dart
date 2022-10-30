@@ -42,7 +42,7 @@ abstract class PersistentStorageService {
   Future<bool> setWhatCommandContent(String value);
 
   // Starting and ending messages //
-  Future<Tuple2<String,String>> getGoesOnlineAndOfflineMessages(String defaultValue);
+  Future<Tuple2<String, String>> getGoesOnlineAndOfflineMessages(String defaultValue);
 
   Future<bool> setGoesOnlineAndOfflineMessages(String startingMessage, String endingMessage);
 
@@ -191,7 +191,8 @@ class PersistentStorageServiceImpl implements PersistentStorageService {
 
   @override
   Future<bool> setGoesOnlineAndOfflineMessages(String onlineMessage, String offlineMessage) async {
-    return await _setSetting(_SETTING_KEY_TWITCH_ONLINE_MESSAGE, onlineMessage) && await _setSetting(_SETTING_KEY_TWITCH_OFFLINE_MESSAGE, offlineMessage);
+    return await _setSetting(_SETTING_KEY_TWITCH_ONLINE_MESSAGE, onlineMessage) &&
+        await _setSetting(_SETTING_KEY_TWITCH_OFFLINE_MESSAGE, offlineMessage);
   }
 
   @override
@@ -228,11 +229,8 @@ class PersistentStorageServiceImpl implements PersistentStorageService {
   Future<CustomCommand?> getCustomCommand(String keyword) async {
     try {
       Database database = await _getDatabase();
-      List<Map<String, Object?>> queryResult = await database.query(
-          _CUSTOM_COMMANDS_TABLE_NAME,
-          columns: [_CUSTOM_COMMAND_CONTENT],
-          where: "$_CUSTOM_COMMAND_PROFILE_ID = $_profileId AND $_CUSTOM_COMMAND_KEYWORD = '$keyword'"
-      );
+      List<Map<String, Object?>> queryResult = await database.query(_CUSTOM_COMMANDS_TABLE_NAME,
+          columns: [_CUSTOM_COMMAND_CONTENT], where: "$_CUSTOM_COMMAND_PROFILE_ID = $_profileId AND $_CUSTOM_COMMAND_KEYWORD = '$keyword'");
       String? content = _firstQueryResultOrNull<String>(queryResult, _CUSTOM_COMMAND_CONTENT);
       if (content == null) {
         return null;

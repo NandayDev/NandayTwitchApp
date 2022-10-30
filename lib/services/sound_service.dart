@@ -1,4 +1,3 @@
-
 // ignore_for_file: constant_identifier_names
 
 import 'package:audioplayers/audioplayers.dart';
@@ -6,13 +5,11 @@ import 'package:nanday_twitch_app/models/twitch_notification.dart';
 import 'package:nanday_twitch_app/services/event_service.dart';
 import 'package:nanday_twitch_app/services/logger_service.dart';
 
-
 abstract class SoundService {
   Future initialize();
 }
 
 class SoundServiceImpl implements SoundService {
-
   SoundServiceImpl(this._eventService, this._logger);
 
   final EventService _eventService;
@@ -29,7 +26,6 @@ class SoundServiceImpl implements SoundService {
 
     _eventService.subscribeToNotificationReceivedEvent((notification) {
       switch (notification.notificationType) {
-
         case TwitchNotificationType.NEW_FOLLOWER:
           _playFile(_Sound.NEW_FOLLOWER);
           break;
@@ -48,7 +44,7 @@ class SoundServiceImpl implements SoundService {
 
   Future _playFile(_Sound sound) async {
     String? fileName;
-    switch(sound) {
+    switch (sound) {
       case _Sound.NEW_MESSAGE:
         fileName = 'new_chat_message.wav';
         break;
@@ -75,12 +71,6 @@ class SoundServiceImpl implements SoundService {
       }
     }
   }
-
 }
 
-enum _Sound {
-  NEW_MESSAGE,
-  NEW_FOLLOWER,
-  NEW_SUBSCRIBER,
-  RAID
-}
+enum _Sound { NEW_MESSAGE, NEW_FOLLOWER, NEW_SUBSCRIBER, RAID }

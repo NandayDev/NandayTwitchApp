@@ -47,6 +47,5 @@ class ServiceInitiator {
       NandayDependencyInjector.instance.resolve(),
       NandayDependencyInjector.instance.resolve(),
       NandayDependencyInjector.instance.resolve(),
-      NandayDependencyInjector.instance.resolve()
-  );
+      NandayDependencyInjector.instance.resolve());
 }

@@ -1,15 +1,8 @@
-import 'package:nanday_twitch_app/models/twitch_notification.dart';
-import 'package:nanday_twitch_app/services/broadcast_messages_service.dart';
 import 'package:nanday_twitch_app/services/event_service.dart';
 import 'package:nanday_twitch_app/services/persistent_storage_service.dart';
-import 'package:nanday_twitch_app/services/sound_service.dart';
 import 'package:nanday_twitch_app/services/text_to_speech_service.dart';
-import 'package:nanday_twitch_app/services/twitch_authentication_service.dart';
-import 'package:nanday_twitch_app/services/twitch_chat_command_service.dart';
 import 'package:nanday_twitch_app/services/twitch_chat_service.dart';
-import 'package:nanday_twitch_app/services/twitch_follower_poller.dart';
 import 'package:nanday_twitch_app/services/twitch_stream_poller.dart';
-import 'package:nanday_twitch_app/services/twitch_thanker.dart';
 import 'package:nanday_twitch_app/ui/base/nanday_view_model.dart';
 
 class MainPageViewModel extends NandayViewModel {

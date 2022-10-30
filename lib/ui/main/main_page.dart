@@ -43,8 +43,9 @@ class _MainPageState extends State<MainPage> {
                     });
               },
               icon: const Icon(Icons.settings)),
-              // Twitch online/offline messages //
-              IconButton(onPressed: () {
+          // Twitch online/offline messages //
+          IconButton(
+              onPressed: () {
                 showDialog(
                     context: context,
                     builder: (context) {
@@ -52,7 +53,8 @@ class _MainPageState extends State<MainPage> {
                           create: (context) => NandayDependencyInjector.instance.resolve<OnlineMessageDialogViewModel>(),
                           child: const OnlineMessageDialog());
                     });
-              }, icon: const Icon(Icons.message))
+              },
+              icon: const Icon(Icons.message))
         ])),
         body: viewModel.isLoading
             ? const Center(child: CircularProgressIndicator())

@@ -1,5 +1,5 @@
 class Profile {
-  Profile(this.botUsername, this.channelName, this.browserExecutable, this.botLanguage, { this.id });
+  Profile(this.botUsername, this.channelName, this.browserExecutable, this.botLanguage, {this.id});
 
   final int? id;
   final String botUsername;

@@ -60,7 +60,7 @@ class NandayDependencyInjector {
         .map<QuoteService>((i) => QuoteServiceImpl(i.get()), isSingleton: true)
         .map<Localizer>((i) => LocalizerImpl(i.get()), isSingleton: true)
         .map<CountdownService>((i) => CountdownServiceImpl(), isSingleton: true)
-        .map<DiscordBot>((i) => NyxxDiscordBot(i.get(), i.get(), i.get(), i.get(), i.get()), isSingleton: true)
+        .map<DiscordBot>((i) => NyxxDiscordBot(i.get(), i.get(), i.get(), i.get(), i.get(), i.get()), isSingleton: true)
         .map<TwitchStreamPoller>((i) => TwitchStreamPollerImpl(i.get(), i.get(), i.get(), i.get()), isSingleton: true)
         .map<SessionRepository>((i) => SessionRepository(), isSingleton: true)
 
@@ -69,7 +69,8 @@ class NandayDependencyInjector {
         .map<LoginPageViewModel>((i) => LoginPageViewModel(i.get(), i.get(), i.get()))
         // Main page //
         .map((i) => MainPageViewModel(i.get(), i.get(), i.get(), i.get(), i.get()))
-        .mapWithParams<ChatMessageViewModel>((i, additionalParameters) => ChatMessageViewModel(i.get(), additionalParameters[ChatMessageViewModel.chatMessageParamName]))
+        .mapWithParams<ChatMessageViewModel>(
+            (i, additionalParameters) => ChatMessageViewModel(i.get(), additionalParameters[ChatMessageViewModel.chatMessageParamName]))
         // Broadcast messages //
         .map<BroadcastMessagesViewModel>((i) => BroadcastMessagesViewModel(i.get(), i.get()))
         .map<OnlineMessageDialogViewModel>((i) => OnlineMessageDialogViewModel(i.get()))

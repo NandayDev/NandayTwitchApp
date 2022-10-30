@@ -1,7 +1,6 @@
 import 'package:nanday_twitch_app/services/persistent_storage_service.dart';
 
 abstract class QuoteService {
-
   ///
   /// Returns a random quote from the previously saved ones. If none available, returns null
   ///
@@ -19,7 +18,6 @@ abstract class QuoteService {
 }
 
 class QuoteServiceImpl implements QuoteService {
-
   QuoteServiceImpl(this._storageService);
 
   final PersistentStorageService _storageService;
@@ -38,5 +36,4 @@ class QuoteServiceImpl implements QuoteService {
   Future<bool> saveQuote(String key, String value) {
     return _storageService.saveQuote(key, value);
   }
-
 }
