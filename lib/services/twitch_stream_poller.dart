@@ -38,10 +38,10 @@ class TwitchStreamPollerImpl implements TwitchStreamPoller {
           title = responseJson['data'][0]['title'];
         }
         _setLastOnlineStatus(channelOnline, title);
-        await Future.delayed(const Duration(minutes: 1));
       } catch (e) {
         _loggerService.w(e.toString());
       }
+      await Future.delayed(const Duration(minutes: 1));
     }
   }
 

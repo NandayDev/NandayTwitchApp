@@ -21,6 +21,6 @@
   "customCommandNotSaved": "Custom command couldn't be saved. Try again.",
   "countdownStarted": "Countdown STARTED!",
   "countdownTimerIsUp": "Countdown timer is UP! {0} have passed!",
-  "channelOnlineDiscordMessage": "{0} is online! Join him at {1}",
+  "channelOnlineDiscordMessage": "@everyone {0} is online! Join him at {1}",
   "channelOfflineDiscordMessageWithNextStream": "{0}'s stream is over. Don't miss out the next stream starting {1}!"
 }

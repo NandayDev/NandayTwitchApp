@@ -9,7 +9,10 @@ class TwitchKeysReader {
     if (_twitchKeys == null) {
       String twitchKeysFileContent = await rootBundle.loadString('assets/keys/twitch_keys.json');
       var json = jsonDecode(twitchKeysFileContent);
-      var discordChannelIds = (json['discordChannelIds'] as List<dynamic>).map((e) => int.parse(e));
+      List<int> discordChannelIds = [];
+      for (var discordChannelId in json['discordChannelIds']) {
+        discordChannelIds.add(discordChannelId);
+      }
       _twitchKeys = TwitchKeys(json['applicationClientId'], json['discordBotToken'], discordChannelIds);
     }
     return _twitchKeys!;
