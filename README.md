@@ -72,7 +72,6 @@ Add a `twitch_keys.json` file to your **assets/keys** folder, with the following
 
     {
         "applicationClientId" : "your Twitch API chat bot app client id",
-        "botUsername" : "your bot username as registered in Twitch",
-        "channelName" : "name of the channel your bot should join (your username should work)",
-        "browserExecutable" : "path of your browser, or null if should use the default one of your OS"
+        "discordBotToken": "your discord bot token",
+        "discordChannelIds": "Channel IDs of discord's channels you wish your bots writes to when you go online/offline"
     }

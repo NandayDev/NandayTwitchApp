@@ -10,6 +10,7 @@ import 'package:nanday_twitch_app/services/quotes_service.dart';
 import 'package:nanday_twitch_app/services/session_repository.dart';
 import 'package:nanday_twitch_app/services/sound_service.dart';
 import 'package:nanday_twitch_app/services/text_to_speech_service.dart';
+import 'package:nanday_twitch_app/services/twitch_api_service.dart';
 import 'package:nanday_twitch_app/services/twitch_authentication_service.dart';
 import 'package:nanday_twitch_app/services/twitch_chat_command_service.dart';
 import 'package:nanday_twitch_app/services/twitch_chat_service.dart';
@@ -63,6 +64,7 @@ class NandayDependencyInjector {
         .map<DiscordBot>((i) => NyxxDiscordBot(i.get(), i.get(), i.get(), i.get(), i.get(), i.get()), isSingleton: true)
         .map<TwitchStreamPoller>((i) => TwitchStreamPollerImpl(i.get(), i.get(), i.get(), i.get()), isSingleton: true)
         .map<SessionRepository>((i) => SessionRepository(), isSingleton: true)
+        .map<TwitchApiService>((i) => TwitchApiService(i.get(), i.get()), isSingleton: true)
 
         // VIEW MODELS //
         // Login //
