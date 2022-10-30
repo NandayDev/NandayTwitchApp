@@ -75,7 +75,21 @@ class NyxxDiscordBot implements DiscordBot {
   Future sendAnnouncement(String text) async {
     for (int channelId in _channelIds) {
       var channel = await _nyxxWebSocket.fetchChannel<ITextChannel>(Snowflake(channelId));
-      channel.sendMessage(MessageBuilder.content(text));
+      channel.sendMessage(NandayMessageBuilder(text));
     }
+  }
+}
+
+class NandayMessageBuilder extends MessageBuilder {
+
+  NandayMessageBuilder(String content) {
+    super.content = content;
+  }
+
+  @override
+  RawApiMap build([AllowedMentions? defaultAllowedMentions]) {
+    RawApiMap map = super.build(defaultAllowedMentions);
+    map['flags'] = 1 << 2;
+    return map;
   }
 }
