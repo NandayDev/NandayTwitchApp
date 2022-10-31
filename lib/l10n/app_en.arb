@@ -22,5 +22,10 @@
   "countdownStarted": "Countdown STARTED!",
   "countdownTimerIsUp": "Countdown timer is UP! {0} have passed!",
   "channelOnlineDiscordMessage": "@everyone {0} is online! Join him at {1}",
-  "channelOfflineDiscordMessageWithNextStream": "{0}'s stream is over. Don't miss out the next stream starting {1}!"
+  "channelOfflineDiscordMessageWithNextStream": "{0}'s stream is over. Don't miss out the next stream starting {1} at {2} UTC!",
+  "databaseError": "Error saving in database",
+  "countCommandCorrectlySaved": "Count command correctly saved!",
+  "countMessage": "{0} has said \"{1}\" {2} {3}",
+  "timesSingular": "time",
+  "timesPlural": "times"
 }

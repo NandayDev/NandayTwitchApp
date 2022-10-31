@@ -16,6 +16,8 @@ class SoundServiceImpl implements SoundService {
   final LoggerService _logger;
   final _player = AudioPlayer();
 
+  // TODO add countdown to avoid sound spamming
+
   @override
   Future initialize() async {
     _eventService.subscribeToChatMessageReceivedEvent((chatMessage) {

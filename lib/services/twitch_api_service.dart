@@ -16,24 +16,27 @@ class TwitchApiService {
     String url = 'https://api.twitch.tv/helix/schedule?broadcaster_id=${_sessionRepository.userId}';
     return _invokeGetRequest<StreamSchedule>(url, (json) {
       List<StreamScheduleElement> elements = [];
-      for (dynamic data in json['data']) {
-        for (dynamic segment in data['segments']) {
-          elements.add(StreamScheduleElement(DateTime.parse(segment['start_time']), DateTime.parse(segment['end_time']), segment['title']));
-        }
+      for (dynamic segment in json['data']['segments']) {
+        elements.add(StreamScheduleElement(DateTime.parse(segment['start_time']), DateTime.parse(segment['end_time']), segment['title']));
       }
-      StreamSchedule(elements);
+      return StreamSchedule(elements);
     });
   }
 
-  Future<TwitchApiResult<T>> _invokeGetRequest<T>(String url, Function(dynamic) func) async {
-    var headers = _authenticationService.generateApiHeaders();
-    Uri uri = Uri.parse(url);
-    Response response = await get(uri, headers: headers);
-    dynamic responseJson = jsonDecode(response.body);
-    if (response.statusCode == 200) {
-      return func(responseJson);
-    } else {
-      return TwitchApiResult.withError(TwitchApiError(responseJson['error'], responseJson['status'], responseJson['message']));
+  Future<TwitchApiResult<T>> _invokeGetRequest<T>(String url, T Function(dynamic) func) async {
+    try {
+      var headers = _authenticationService.generateApiHeaders();
+      Uri uri = Uri.parse(url);
+      Response response = await get(uri, headers: headers);
+      dynamic responseJson = jsonDecode(response.body);
+      if (response.statusCode == 200) {
+        T result = func(responseJson);
+        return TwitchApiResult.successful(result);
+      } else {
+        return TwitchApiResult.withError(TwitchApiError(responseJson['error'], responseJson['status'], responseJson['message']));
+      }
+    } catch (e) {
+      return TwitchApiResult.withError(TwitchApiError(null, null, e.toString()));
     }
   }
 }

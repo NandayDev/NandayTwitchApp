@@ -8,6 +8,7 @@ import 'package:nanday_twitch_app/services/localizer.dart';
 import 'package:nanday_twitch_app/services/logger_service.dart';
 import 'package:nanday_twitch_app/services/persistent_storage_service.dart';
 import 'package:nanday_twitch_app/services/quotes_service.dart';
+import 'package:nanday_twitch_app/services/session_repository.dart';
 import 'package:nanday_twitch_app/services/twitch_chat_service.dart';
 
 abstract class TwitchChatCommandService {
@@ -16,7 +17,7 @@ abstract class TwitchChatCommandService {
 
 class TwitchChatCommandServiceImpl implements TwitchChatCommandService {
   TwitchChatCommandServiceImpl(this._twitchChatService, this._eventService, this._storageService, this._quoteService, this._localizer,
-      this._loggerService, this._countdownService);
+      this._sessionRepository, this._loggerService, this._countdownService);
 
   final EventService _eventService;
   final TwitchChatService _twitchChatService;
@@ -24,6 +25,7 @@ class TwitchChatCommandServiceImpl implements TwitchChatCommandService {
   final CountdownService _countdownService;
   final QuoteService _quoteService;
   final Localizer _localizer;
+  final SessionRepository _sessionRepository;
   final LoggerService _loggerService;
 
   final HashSet<String> _greetedUsers = HashSet();
@@ -148,6 +150,74 @@ class TwitchChatCommandServiceImpl implements TwitchChatCommandService {
           }
           break;
 
+        case 'addcountcmd':
+          if (false == chatMessage.isFromStreamer) {
+            answer = _localizer.localizations.notAuthorized;
+            break;
+          }
+
+          String? key = match.group(2);
+          if (key == null) {
+            answer = _localizer.localizations.invalidCommandSyntax;
+            break;
+          }
+          String content = chatMessage.message.substring(1 + match.group(1)!.length + 1 + key.length + 1, chatMessage.message.length);
+          if (content.isEmpty) {
+            answer = _localizer.localizations.invalidCommandSyntax;
+            break;
+          }
+
+          if (await _storageService.addCountCommand(key, content)) {
+            answer = _localizer.localizations.countCommandCorrectlySaved;
+          } else {
+            answer = _localizer.localizations.databaseError;
+          }
+
+          break;
+
+        case 'commands':
+          // TODO list all available commands
+
+          break;
+
+        case 'uptime':
+          // TODO
+
+          break;
+
+        case 'lurk':
+          // TODO play sound also
+
+          break;
+
+        case 'so':
+          // Shout out
+          //: !so and then the user and it will give a shout out to them - it will say please check out this person they were playing this game on twitch and this is the link
+          //  exact text: Hey Guys, Check out ${1} who last played ${game ${1}} at https://twitch.tv/${channel ${1}}! HeartOtis
+          break;
+
+        case 'dadjoke':
+          // TODO https://dadjokes.io/documentation/endpoints/random-jokes
+
+          break;
+
+        case 'snd':
+          // TODO sounds
+
+          break;
+
+        // TODO redeem prizes?
+        // Consider if using channel points or bot
+        // Maybe a separate set of points for user to redeem (like support points, in my database)
+        /*
+
+GLHF Pledgedarksideup: i wanted to keep a timer - for when someone redeems for example, no swearing for 5mins - then the bot will count it down for me
+GLHF Pledgedarksideup: but i never figured it out
+GLHF Pledgedarksideup: maybe u can redeem maybe play with parrots for 5mins and keep it for 1 time use per stream
+
+Or giveaways, prizes, etc
+       */
+
         case 'countdown':
           if (false == chatMessage.isFromStreamer) {
             answer = _localizer.localizations.notAuthorized;
@@ -176,8 +246,20 @@ class TwitchChatCommandServiceImpl implements TwitchChatCommandService {
           CustomCommand? customCommand = await _storageService.getCustomCommand(commandKeyword);
           if (customCommand == null) {
             _loggerService.d("_handleCommandIfPresent: custom command with keyword $commandKeyword not found");
+            var countsTuple = await _storageService.getCountsForKeyAndIncrement(commandKeyword);
+            if (countsTuple != null) {
+              int count = countsTuple.item1;
+              String words = countsTuple.item2;
+              answer = Localizer.getStringWithPlaceholders(_localizer.localizations.countMessage, [
+                _sessionRepository.userDisplayName,
+                words,
+                count.toString(),
+                count == 1 ? _localizer.localizations.timesSingular : _localizer.localizations.timesPlural
+              ]);
+            }
             break;
           }
+
           answer = customCommand.content;
           break;
       }

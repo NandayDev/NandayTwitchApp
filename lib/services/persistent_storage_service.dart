@@ -57,6 +57,10 @@ abstract class PersistentStorageService {
   Future<CustomCommand?> getCustomCommand(String keyword);
 
   Future<bool> saveCustomCommand(CustomCommand command);
+
+  // Counts //
+  Future<bool> addCountCommand(String key, String words);
+  Future<Tuple2<int, String>?> getCountsForKeyAndIncrement(String key);
 }
 
 class PersistentStorageServiceImpl implements PersistentStorageService {
@@ -256,6 +260,47 @@ class PersistentStorageServiceImpl implements PersistentStorageService {
     return false;
   }
 
+  @override
+  Future<bool> addCountCommand(String key, String words) async {
+    try {
+      Database database = await _getDatabase();
+      List<Map<String, Object?>> queryResult = await database.query(_COUNTS_TABLE_NAME,
+          columns: [_COUNT_NUMBER], where: "$_COUNT_KEY = '$key'");
+      if (queryResult.isEmpty) {
+        int insertResult = await database.insert(_COUNTS_TABLE_NAME, { _COUNT_KEY: key, _COUNT_NUMBER: 0, _COUNT_WORDS: words });
+        // Command doesn't exist //
+        return insertResult > 0;
+      } else {
+        return true;
+      }
+    } catch (e) {
+      _loggerService.e("Error while getting counts for key and incrementing: ${e.toString()}");
+    }
+    return false;
+  }
+
+  @override
+  Future<Tuple2<int, String>?> getCountsForKeyAndIncrement(String key) async {
+    try {
+      Database database = await _getDatabase();
+      List<Map<String, Object?>> queryResult = await database.query(_COUNTS_TABLE_NAME,
+          columns: [_COUNT_NUMBER, _COUNT_WORDS], where: "$_COUNT_KEY = '$key'");
+      if (queryResult.isEmpty) {
+        // Command doesn't exist //
+        return null;
+      }
+
+      int currentCount = queryResult[0][_COUNT_NUMBER] as int;
+      String words = queryResult[0][_COUNT_WORDS] as String;
+      await database.update(_COUNTS_TABLE_NAME, { _COUNT_NUMBER: ++currentCount }, where: "$_COUNT_KEY = '$key'");
+      return Tuple2(currentCount, words);
+
+    } catch (e) {
+      _loggerService.e("Error while getting counts for key and incrementing: ${e.toString()}");
+    }
+    return null;
+  }
+
   Database? _database;
 
   T? _firstQueryResultOrNull<T>(List<Map<String, Object?>> queryResult, String columnName) {
@@ -277,9 +322,9 @@ class PersistentStorageServiceImpl implements PersistentStorageService {
       _loggerService.d("_getDatabase: Path is $databasePath");
       _database = await databaseFactoryFfi.openDatabase(databasePath,
           options: OpenDatabaseOptions(
-              version: 1,
+              version: 4,
               onUpgrade: (db, oldVersion, newVersion) async {
-                if (oldVersion == 0) {
+                if (oldVersion < 1) {
                   await db.execute('CREATE TABLE $_PROFILES_TABLE_NAME('
                       '$_PROFILE_ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,'
                       '$_PROFILE_CHANNEL_NAME TEXT NOT NULL,'
@@ -309,6 +354,22 @@ class PersistentStorageServiceImpl implements PersistentStorageService {
                       '$_CUSTOM_COMMAND_CONTENT TEXT NOT NULL,'
                       'PRIMARY KEY ($_CUSTOM_COMMAND_PROFILE_ID, $_CUSTOM_COMMAND_KEYWORD),'
                       'FOREIGN KEY($_CUSTOM_COMMAND_PROFILE_ID) REFERENCES $_PROFILES_TABLE_NAME($_PROFILE_ID));');
+                }
+                if (oldVersion < 2) {
+                  await db.execute('CREATE TABLE $_COUNTS_TABLE_NAME('
+                      '$_COUNT_KEY TEXT PRIMARY KEY NOT NULL,'
+                      '$_COUNT_NUMBER TEXT NOT NULL);'
+                  );
+                }
+                if (oldVersion < 3) {
+                  await db.execute('DROP TABLE $_COUNTS_TABLE_NAME');
+                  await db.execute('CREATE TABLE $_COUNTS_TABLE_NAME('
+                      '$_COUNT_KEY TEXT PRIMARY KEY NOT NULL,'
+                      '$_COUNT_NUMBER INTEGER NOT NULL);'
+                  );
+                }
+                if (oldVersion < 4) {
+                  await db.execute('ALTER TABLE $_COUNTS_TABLE_NAME ADD COLUMN $_COUNT_WORDS TEXT NOT NULL;');
                 }
               }));
       _loggerService.d("_getDatabase: Database created");
@@ -406,6 +467,11 @@ class PersistentStorageServiceImpl implements PersistentStorageService {
   static const String _CUSTOM_COMMAND_PROFILE_ID = "profile_id";
   static const String _CUSTOM_COMMAND_KEYWORD = "keyword";
   static const String _CUSTOM_COMMAND_CONTENT = "content";
+
+  static const String _COUNTS_TABLE_NAME = "counts";
+  static const String _COUNT_KEY = "key";
+  static const String _COUNT_NUMBER = "number";
+  static const String _COUNT_WORDS = "words";
 
   static const int _DEFAULT_BROADCAST_DELAY_SECONDS = 60 * 5;
 }

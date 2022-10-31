@@ -62,7 +62,7 @@ class NyxxDiscordBot implements DiscordBot {
           if (streamSchedule.elements.isNotEmpty) {
             StreamScheduleElement nextStreamElement = streamSchedule.elements[0];
             sendAnnouncement(Localizer.getStringWithPlaceholders(_localizer.localizations.channelOfflineDiscordMessageWithNextStream,
-                [_sessionRepository.userDisplayName, DateFormat.yMMMMEEEEd().format(nextStreamElement.startTime)]));
+                [_sessionRepository.userDisplayName, DateFormat.yMMMMEEEEd().format(nextStreamElement.startTime), DateFormat.Hm().format(nextStreamElement.startTime) ]));
           }
         }
       }
