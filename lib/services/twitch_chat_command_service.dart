@@ -2,10 +2,12 @@ import 'dart:collection';
 
 import 'package:intl/intl.dart';
 import 'package:nanday_twitch_app/models/command.dart';
+import 'package:nanday_twitch_app/models/result.dart';
 import 'package:nanday_twitch_app/services/countdown_service.dart';
 import 'package:nanday_twitch_app/services/event_service.dart';
 import 'package:nanday_twitch_app/services/localizer.dart';
 import 'package:nanday_twitch_app/services/logger_service.dart';
+import 'package:nanday_twitch_app/services/other_api_service.dart';
 import 'package:nanday_twitch_app/services/persistent_storage_service.dart';
 import 'package:nanday_twitch_app/services/quotes_service.dart';
 import 'package:nanday_twitch_app/services/session_repository.dart';
@@ -17,7 +19,7 @@ abstract class TwitchChatCommandService {
 
 class TwitchChatCommandServiceImpl implements TwitchChatCommandService {
   TwitchChatCommandServiceImpl(this._twitchChatService, this._eventService, this._storageService, this._quoteService, this._localizer,
-      this._sessionRepository, this._loggerService, this._countdownService);
+      this._sessionRepository, this._otherApiService, this._loggerService, this._countdownService);
 
   final EventService _eventService;
   final TwitchChatService _twitchChatService;
@@ -26,6 +28,7 @@ class TwitchChatCommandServiceImpl implements TwitchChatCommandService {
   final QuoteService _quoteService;
   final Localizer _localizer;
   final SessionRepository _sessionRepository;
+  final OtherApiService _otherApiService;
   final LoggerService _loggerService;
 
   final HashSet<String> _greetedUsers = HashSet();
@@ -181,8 +184,18 @@ class TwitchChatCommandServiceImpl implements TwitchChatCommandService {
           break;
 
         case 'uptime':
-          // TODO
-
+          DateTime? streamLiveSince = _sessionRepository.streamLiveSince;
+          if (streamLiveSince == null) {
+            answer = "Stream seems offline!";
+          } else {
+            Duration durationSinceLiveStarted = DateTime.now().difference(streamLiveSince);
+            int hours = durationSinceLiveStarted.inHours;
+            Duration minutesDuration = durationSinceLiveStarted - Duration(hours: hours);
+            int minutes = minutesDuration.inMinutes;
+            String messageString = answer = Localizer.getStringWithPlaceholders(_localizer.localizations.streamLiveSinceMessage, [
+              _sessionRepository.userDisplayName,
+            ]);
+          }
           break;
 
         case 'lurk':
@@ -197,8 +210,8 @@ class TwitchChatCommandServiceImpl implements TwitchChatCommandService {
           break;
 
         case 'dadjoke':
-          // TODO https://dadjokes.io/documentation/endpoints/random-jokes
-
+          Result<String, String> apiResult = await _otherApiService.getRandomDadJoke();
+          answer = apiResult.result;
           break;
 
         case 'snd':
@@ -256,6 +269,23 @@ Or giveaways, prizes, etc
                 count.toString(),
                 count == 1 ? _localizer.localizations.timesSingular : _localizer.localizations.timesPlural
               ]);
+
+              /*
+              darksideup: you need a command to add and remove
+              darksideup: add makessense and remove makessense by number
+              darksideup: and reset completely
+              darksideup: and !getmakessense so we can see how many there is already for the day
+              darksideup: it must be chat commands
+              darksideup: its easier to just make the bot do it the reset
+              darksideup: every stream i used to reset my death counter for the bot
+              darksideup: i would start the stream with !resetdead
+              darksideup: that would work if you have a long stream a day
+              darksideup: if you are getting disconnected a lot or have to go and come back
+              darksideup: then the bot will reset right
+              darksideup: and that days counter wont keep track properly
+              darksideup: maybe you can have that as a toggle option for other users
+              darksideup: but i know some streamers who always get disconnected but still want to try streaming
+               */
             }
             break;
           }

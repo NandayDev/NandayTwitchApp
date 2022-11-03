@@ -1,5 +1,10 @@
 class Result<T, E> {
-  Result({this.result, this.error});
+
+  Result.successful(T result) : this._(result: result);
+
+  Result.withError(E error) : this._(error: error);
+
+  Result._({this.result, this.error});
 
   final T? result;
   final E? error;

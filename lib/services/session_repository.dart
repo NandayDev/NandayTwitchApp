@@ -21,4 +21,9 @@ class SessionRepository {
   /// Twitch ID of the user
   ///
   late int userId;
+
+  ///
+  /// Since when the stream is live; if not live, null
+  ///
+  DateTime? streamLiveSince;
 }

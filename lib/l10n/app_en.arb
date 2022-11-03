@@ -27,5 +27,10 @@
   "countCommandCorrectlySaved": "Count command correctly saved!",
   "countMessage": "{0} has said \"{1}\" {2} {3}",
   "timesSingular": "time",
-  "timesPlural": "times"
+  "timesPlural": "times",
+  "streamLiveSinceMessage": "{0} is live since {1}",
+  "hour": "hour",
+  "hours": "hours",
+  "minute": "minute",
+  "minutes": "minutes"
 }

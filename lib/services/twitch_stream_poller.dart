@@ -1,9 +1,11 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
-import 'package:nanday_twitch_app/models/channel_online_info.dart';
+import 'package:nanday_twitch_app/models/db_stream.dart';
+import 'package:nanday_twitch_app/models/stream_online_info.dart';
 import 'package:nanday_twitch_app/services/event_service.dart';
 import 'package:nanday_twitch_app/services/logger_service.dart';
+import 'package:nanday_twitch_app/services/persistent_storage_service.dart';
 import 'package:nanday_twitch_app/services/session_repository.dart';
 import 'package:nanday_twitch_app/services/twitch_authentication_service.dart';
 
@@ -15,14 +17,16 @@ abstract class TwitchStreamPoller {
 }
 
 class TwitchStreamPollerImpl implements TwitchStreamPoller {
-  TwitchStreamPollerImpl(this._sessionRepository, this._authenticationService, this._eventService, this._loggerService);
+  TwitchStreamPollerImpl(this._sessionRepository, this._authenticationService, this._eventService, this._storageService, this._loggerService);
 
   final SessionRepository _sessionRepository;
   final TwitchAuthenticationService _authenticationService;
   final EventService _eventService;
+  final PersistentStorageService _storageService;
   final LoggerService _loggerService;
 
   bool _lastOnlineStatus = false;
+  String? _lastStreamTwitchId = null;
 
   @override
   void startPollingTwitchStreams() async {
@@ -34,10 +38,14 @@ class TwitchStreamPollerImpl implements TwitchStreamPoller {
         dynamic responseJson = jsonDecode(response.body);
         bool channelOnline = (responseJson['data'] as List).isNotEmpty;
         String? title;
+        DateTime? streamLiveSince;
         if (channelOnline) {
-          title = responseJson['data'][0]['title'];
+          dynamic data = responseJson['data'][0];
+          title = data['title'];
+          streamLiveSince = DateTime.parse(data['started_at']);
+          _lastStreamTwitchId = data['id'];
         }
-        _setLastOnlineStatus(channelOnline, title);
+        _setLastOnlineStatus(channelOnline, title, streamLiveSince);
       } catch (e) {
         _loggerService.w(e.toString());
       }
@@ -45,10 +53,36 @@ class TwitchStreamPollerImpl implements TwitchStreamPoller {
     }
   }
 
-  void _setLastOnlineStatus(bool value, String? streamTitle) {
+  void _setLastOnlineStatus(bool value, String? streamTitle, DateTime? streamLiveSince) async {
     if (value != _lastOnlineStatus) {
       _lastOnlineStatus = value;
-      _eventService.channelOnlineChanged(ChannelOnlineInfo(value, streamTitle));
+      late DbStream dbStream;
+      if (_lastStreamTwitchId == null) {
+        return;
+      }
+      String twitchStreamId = _lastStreamTwitchId!;
+      if (_lastStreamTwitchId != null) {
+        var streamFromDb = await _storageService.getDbStreamByTwitchId(twitchStreamId);
+        if (streamFromDb == null) {
+          dbStream = DbStream(
+              twitchStreamId,
+              streamTitle ?? "",
+              streamLiveSince?.millisecondsSinceEpoch ?? 0,
+              value == false ? DateTime
+                  .now()
+                  .millisecondsSinceEpoch : null
+          );
+        } else {
+          dbStream = streamFromDb;
+        }
+      }
+      _sessionRepository.streamLiveSince = streamLiveSince;
+      await _eventService.streamOnlineChanged(StreamOnlineInfo(value, streamTitle, dbStream));
+      if (value && false == dbStream.countsReset) {
+        await _storageService.resetAllCounts();
+        dbStream.countsReset = true;
+      }
+      await _storageService.createOrUpdateDbStream(dbStream);
     }
   }
 }

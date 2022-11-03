@@ -42,7 +42,7 @@ class TwitchApiService {
 }
 
 class TwitchApiResult<T> extends Result<T, TwitchApiError> {
-  TwitchApiResult.successful(T result) : super(result: result);
+  TwitchApiResult.successful(T result) : super.successful(result);
 
-  TwitchApiResult.withError(TwitchApiError error) : super(error: error);
+  TwitchApiResult.withError(TwitchApiError error) : super.withError(error);
 }

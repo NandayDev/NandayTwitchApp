@@ -5,6 +5,7 @@ import 'package:nanday_twitch_app/services/discord_bot.dart';
 import 'package:nanday_twitch_app/services/event_service.dart';
 import 'package:nanday_twitch_app/services/localizer.dart';
 import 'package:nanday_twitch_app/services/logger_service.dart';
+import 'package:nanday_twitch_app/services/other_api_service.dart';
 import 'package:nanday_twitch_app/services/persistent_storage_service.dart';
 import 'package:nanday_twitch_app/services/quotes_service.dart';
 import 'package:nanday_twitch_app/services/session_repository.dart';
@@ -53,7 +54,7 @@ class NandayDependencyInjector {
         .map<PersistentStorageService>((i) => PersistentStorageServiceImpl(i.get()), isSingleton: true)
         .map<BroadcastMessagesService>((i) => BroadcastMessagesServiceImpl(i.get(), i.get(), i.get(), i.get()), isSingleton: true)
         .map<LoggerService>((i) => LoggerServiceImpl(), isSingleton: true)
-        .map<TwitchChatCommandService>((i) => TwitchChatCommandServiceImpl(i.get(), i.get(), i.get(), i.get(), i.get(), i.get(), i.get(), i.get()),
+        .map<TwitchChatCommandService>((i) => TwitchChatCommandServiceImpl(i.get(), i.get(), i.get(), i.get(), i.get(), i.get(), i.get(), i.get(), i.get()),
             isSingleton: true)
         .map<TwitchFollowerPoller>((i) => TwitchFollowerPollerImpl(i.get(), i.get(), i.get(), i.get()), isSingleton: true)
         .map<TwitchThanker>((i) => TwitchThankerImpl(i.get(), i.get(), i.get()), isSingleton: true)
@@ -62,9 +63,10 @@ class NandayDependencyInjector {
         .map<Localizer>((i) => LocalizerImpl(i.get()), isSingleton: true)
         .map<CountdownService>((i) => CountdownServiceImpl(), isSingleton: true)
         .map<DiscordBot>((i) => NyxxDiscordBot(i.get(), i.get(), i.get(), i.get(), i.get(), i.get()), isSingleton: true)
-        .map<TwitchStreamPoller>((i) => TwitchStreamPollerImpl(i.get(), i.get(), i.get(), i.get()), isSingleton: true)
+        .map<TwitchStreamPoller>((i) => TwitchStreamPollerImpl(i.get(), i.get(), i.get(), i.get(), i.get()), isSingleton: true)
         .map<SessionRepository>((i) => SessionRepository(), isSingleton: true)
         .map<TwitchApiService>((i) => TwitchApiService(i.get(), i.get()), isSingleton: true)
+        .map<OtherApiService>((i) => OtherApiServiceImpl(i.get(), i.get()), isSingleton: true)
 
         // VIEW MODELS //
         // Login //

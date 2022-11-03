@@ -13,16 +13,17 @@ class TwitchKeysReader {
       for (var discordChannelId in json['discordChannelIds']) {
         discordChannelIds.add(discordChannelId);
       }
-      _twitchKeys = TwitchKeys(json['applicationClientId'], json['discordBotToken'], discordChannelIds);
+      _twitchKeys = TwitchKeys(json['applicationClientId'], json['discordBotToken'], discordChannelIds, json['rapidAPIKey']);
     }
     return _twitchKeys!;
   }
 }
 
 class TwitchKeys {
-  TwitchKeys(this.applicationClientId, this.discordBotToken, this.discordChannelIds);
+  TwitchKeys(this.applicationClientId, this.discordBotToken, this.discordChannelIds, this.rapidAPIKey);
 
   final String applicationClientId;
   final String discordBotToken;
   final Iterable<int> discordChannelIds;
+  final String? rapidAPIKey;
 }

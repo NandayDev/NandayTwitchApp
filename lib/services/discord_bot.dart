@@ -52,17 +52,25 @@ class NyxxDiscordBot implements DiscordBot {
     _eventService.subscribeToChannelOnlineChangedEvent((info) async {
       if (info.isStarted) {
         // Twitch channel went online //
-        sendAnnouncement(Localizer.getStringWithPlaceholders(_localizer.localizations.channelOnlineDiscordMessage + " - " + (info.streamTitle ?? ""),
+        if (info.dbStream?.discordStartMessageSent == true) {
+          return;
+        }
+        await sendAnnouncement(Localizer.getStringWithPlaceholders(_localizer.localizations.channelOnlineDiscordMessage + " - " + (info.streamTitle ?? ""),
             [_sessionRepository.userDisplayName, 'https://www.twitch.tv/${_sessionRepository.username}']));
+        info.dbStream?.discordStartMessageSent = true;
       } else {
         // Twitch channel went offline //
+        if (info.dbStream?.discordEndMessageSent == true) {
+          return;
+        }
         var streamScheduleResult = await _twitchApiService.getStreamSchedule();
         if (streamScheduleResult.isSuccessful) {
           StreamSchedule streamSchedule = streamScheduleResult.result!;
           if (streamSchedule.elements.isNotEmpty) {
             StreamScheduleElement nextStreamElement = streamSchedule.elements[0];
-            sendAnnouncement(Localizer.getStringWithPlaceholders(_localizer.localizations.channelOfflineDiscordMessageWithNextStream,
+            await sendAnnouncement(Localizer.getStringWithPlaceholders(_localizer.localizations.channelOfflineDiscordMessageWithNextStream,
                 [_sessionRepository.userDisplayName, DateFormat.yMMMMEEEEd().format(nextStreamElement.startTime), DateFormat.Hm().format(nextStreamElement.startTime) ]));
+            info.dbStream?.discordEndMessageSent = true;
           }
         }
       }
@@ -75,7 +83,7 @@ class NyxxDiscordBot implements DiscordBot {
   Future sendAnnouncement(String text) async {
     for (int channelId in _channelIds) {
       var channel = await _nyxxWebSocket.fetchChannel<ITextChannel>(Snowflake(channelId));
-      channel.sendMessage(NandayMessageBuilder(text));
+      await channel.sendMessage(NandayMessageBuilder(text));
     }
   }
 }

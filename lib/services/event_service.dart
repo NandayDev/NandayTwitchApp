@@ -1,4 +1,4 @@
-import 'package:nanday_twitch_app/models/channel_online_info.dart';
+import 'package:nanday_twitch_app/models/stream_online_info.dart';
 import 'package:nanday_twitch_app/models/twitch_notification.dart';
 import 'package:nanday_twitch_app/services/twitch_chat_service.dart';
 
@@ -25,18 +25,18 @@ abstract class EventService {
   void broadcastMessagesChanged(List<String> messages);
 
   // Channel online/offline //
-  void subscribeToChannelOnlineChangedEvent(Function(ChannelOnlineInfo) function);
+  void subscribeToChannelOnlineChangedEvent(Future Function(StreamOnlineInfo) function);
 
-  void unsubscribeToChannelOnlineChangedEvent(Function(ChannelOnlineInfo) function);
+  void unsubscribeToChannelOnlineChangedEvent(Future Function(StreamOnlineInfo) function);
 
-  void channelOnlineChanged(ChannelOnlineInfo info);
+  Future streamOnlineChanged(StreamOnlineInfo info);
 }
 
 class EventServiceImpl implements EventService {
   final List<Function(TwitchChatMessage)> _chatMessagesFunctions = [];
   final List<Function(TwitchNotification)> _notificationFunctions = [];
   final List<Function(List<String>)> _broadcastMessagesFunctions = [];
-  final List<Function(ChannelOnlineInfo)> _channelOnlineFunctions = [];
+  final List<Future Function(StreamOnlineInfo)> _channelOnlineFunctions = [];
 
   @override
   void subscribeToChatMessageReceivedEvent(Function(TwitchChatMessage) function) {
@@ -74,6 +74,12 @@ class EventServiceImpl implements EventService {
     }
   }
 
+  Future _triggerFutureEvent<T>(List<Future Function(T)> functions, T parameter) async {
+    for (var function in functions) {
+      await function(parameter);
+    }
+  }
+
   @override
   void subscribeToBroadcastMessagesChangedEvent(Function(List<String>) function) {
     _broadcastMessagesFunctions.add(function);
@@ -90,17 +96,17 @@ class EventServiceImpl implements EventService {
   }
 
   @override
-  void subscribeToChannelOnlineChangedEvent(Function(ChannelOnlineInfo) function) {
+  void subscribeToChannelOnlineChangedEvent(Future Function(StreamOnlineInfo) function) {
     _channelOnlineFunctions.add(function);
   }
 
   @override
-  void unsubscribeToChannelOnlineChangedEvent(Function(ChannelOnlineInfo) function) {
+  void unsubscribeToChannelOnlineChangedEvent(Future Function(StreamOnlineInfo) function) {
     _channelOnlineFunctions.remove(function);
   }
 
   @override
-  void channelOnlineChanged(ChannelOnlineInfo info) {
-    _triggerEvent(_channelOnlineFunctions, info);
+  Future streamOnlineChanged(StreamOnlineInfo info) {
+    return _triggerFutureEvent(_channelOnlineFunctions, info);
   }
 }

@@ -2,6 +2,7 @@
 
 import 'package:nanday_twitch_app/constants.dart';
 import 'package:nanday_twitch_app/models/command.dart';
+import 'package:nanday_twitch_app/models/db_stream.dart';
 import 'package:nanday_twitch_app/models/profile.dart';
 import 'package:nanday_twitch_app/services/logger_service.dart';
 import 'package:sqflite/sqflite.dart';
@@ -61,6 +62,12 @@ abstract class PersistentStorageService {
   // Counts //
   Future<bool> addCountCommand(String key, String words);
   Future<Tuple2<int, String>?> getCountsForKeyAndIncrement(String key);
+  Future<bool> resetAllCounts();
+
+  // Streams //
+  Future<DbStream?> getDbStreamByTwitchId(String twitchStreamId);
+
+  Future<bool> createOrUpdateDbStream(DbStream dbStream);
 }
 
 class PersistentStorageServiceImpl implements PersistentStorageService {
@@ -68,6 +75,7 @@ class PersistentStorageServiceImpl implements PersistentStorageService {
 
   final LoggerService _loggerService;
   Map<String, String>? __settingsCache;
+  Database? _database;
 
   Future<Map<String, String>> get _settingsCache async {
     if (__settingsCache == null) {
@@ -264,10 +272,9 @@ class PersistentStorageServiceImpl implements PersistentStorageService {
   Future<bool> addCountCommand(String key, String words) async {
     try {
       Database database = await _getDatabase();
-      List<Map<String, Object?>> queryResult = await database.query(_COUNTS_TABLE_NAME,
-          columns: [_COUNT_NUMBER], where: "$_COUNT_KEY = '$key'");
+      List<Map<String, Object?>> queryResult = await database.query(_COUNTS_TABLE_NAME, columns: [_COUNT_NUMBER], where: "$_COUNT_KEY = '$key'");
       if (queryResult.isEmpty) {
-        int insertResult = await database.insert(_COUNTS_TABLE_NAME, { _COUNT_KEY: key, _COUNT_NUMBER: 0, _COUNT_WORDS: words });
+        int insertResult = await database.insert(_COUNTS_TABLE_NAME, {_COUNT_KEY: key, _COUNT_NUMBER: 0, _COUNT_WORDS: words});
         // Command doesn't exist //
         return insertResult > 0;
       } else {
@@ -283,8 +290,8 @@ class PersistentStorageServiceImpl implements PersistentStorageService {
   Future<Tuple2<int, String>?> getCountsForKeyAndIncrement(String key) async {
     try {
       Database database = await _getDatabase();
-      List<Map<String, Object?>> queryResult = await database.query(_COUNTS_TABLE_NAME,
-          columns: [_COUNT_NUMBER, _COUNT_WORDS], where: "$_COUNT_KEY = '$key'");
+      List<Map<String, Object?>> queryResult =
+          await database.query(_COUNTS_TABLE_NAME, columns: [_COUNT_NUMBER, _COUNT_WORDS], where: "$_COUNT_KEY = '$key'");
       if (queryResult.isEmpty) {
         // Command doesn't exist //
         return null;
@@ -292,22 +299,62 @@ class PersistentStorageServiceImpl implements PersistentStorageService {
 
       int currentCount = queryResult[0][_COUNT_NUMBER] as int;
       String words = queryResult[0][_COUNT_WORDS] as String;
-      await database.update(_COUNTS_TABLE_NAME, { _COUNT_NUMBER: ++currentCount }, where: "$_COUNT_KEY = '$key'");
+      await database.update(_COUNTS_TABLE_NAME, {_COUNT_NUMBER: ++currentCount}, where: "$_COUNT_KEY = '$key'");
       return Tuple2(currentCount, words);
-
     } catch (e) {
-      _loggerService.e("Error while getting counts for key and incrementing: ${e.toString()}");
+      _loggerService.e("getCountsForKeyAndIncrement: Error while getting counts for key and incrementing: ${e.toString()}");
     }
     return null;
   }
 
-  Database? _database;
+  @override
+  Future<bool> resetAllCounts() async {
+    try {
+      Database database = await _getDatabase();
+      int deleted = await database.delete(_COUNTS_TABLE_NAME);
+      _loggerService.d("resetAllCounts: deleted $deleted rows from $_COUNTS_TABLE_NAME table");
+      return true;
+    } catch (e) {
+      _loggerService.e("resetAllCounts: Error while resetting all counts: ${e.toString()}");
+      return false;
+    }
+  }
+
+  @override
+  Future<bool> createOrUpdateDbStream(DbStream dbStream) {
+    var map = _convertDbStreamToMap(dbStream);
+    return _insertInDatabase(map, _STREAMS_TABLE_NAME);
+  }
+
+  @override
+  Future<DbStream?> getDbStreamByTwitchId(String twitchStreamId) async {
+    Database database = await _getDatabase();
+    List<Map<String, Object?>> queryResult = await database.query(_STREAMS_TABLE_NAME, where: "$_STREAM_TWITCH_ID = '$twitchStreamId' AND $_STREAM_PROFILE_ID = $_profileId");
+    if (queryResult.isEmpty) {
+      return null;
+    }
+    return _convertMapToStream(queryResult[0]);
+  }
 
   T? _firstQueryResultOrNull<T>(List<Map<String, Object?>> queryResult, String columnName) {
     if (queryResult.isEmpty) {
       return null;
     }
     return queryResult[0][columnName] as T;
+  }
+
+  ///
+  /// Attempts to insert given map in the table, returns true if successful
+  ///
+  Future<bool> _insertInDatabase(Map<String, Object?> map, String tableName, { ConflictAlgorithm conflictAlgorithm = ConflictAlgorithm.replace }) async {
+    try {
+      Database database = await _getDatabase();
+      await database.insert(tableName, map, conflictAlgorithm: conflictAlgorithm);
+      return true;
+    } catch (e) {
+      _loggerService.e("Error while inserting $map: ${e.toString()}");
+    }
+    return false;
   }
 
   Future<Database> _getDatabase() async {
@@ -322,7 +369,7 @@ class PersistentStorageServiceImpl implements PersistentStorageService {
       _loggerService.d("_getDatabase: Path is $databasePath");
       _database = await databaseFactoryFfi.openDatabase(databasePath,
           options: OpenDatabaseOptions(
-              version: 4,
+              version: 5,
               onUpgrade: (db, oldVersion, newVersion) async {
                 if (oldVersion < 1) {
                   await db.execute('CREATE TABLE $_PROFILES_TABLE_NAME('
@@ -358,18 +405,27 @@ class PersistentStorageServiceImpl implements PersistentStorageService {
                 if (oldVersion < 2) {
                   await db.execute('CREATE TABLE $_COUNTS_TABLE_NAME('
                       '$_COUNT_KEY TEXT PRIMARY KEY NOT NULL,'
-                      '$_COUNT_NUMBER TEXT NOT NULL);'
-                  );
+                      '$_COUNT_NUMBER TEXT NOT NULL);');
                 }
                 if (oldVersion < 3) {
                   await db.execute('DROP TABLE $_COUNTS_TABLE_NAME');
                   await db.execute('CREATE TABLE $_COUNTS_TABLE_NAME('
                       '$_COUNT_KEY TEXT PRIMARY KEY NOT NULL,'
-                      '$_COUNT_NUMBER INTEGER NOT NULL);'
-                  );
+                      '$_COUNT_NUMBER INTEGER NOT NULL);');
                 }
                 if (oldVersion < 4) {
                   await db.execute('ALTER TABLE $_COUNTS_TABLE_NAME ADD COLUMN $_COUNT_WORDS TEXT NOT NULL;');
+                }
+                if (oldVersion < 5) {
+                  await db.execute('CREATE TABLE $_STREAMS_TABLE_NAME('
+                      '$_STREAM_ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,'
+                      '$_STREAM_TWITCH_ID TEXT NOT NULL,'
+                      '$_STREAM_PROFILE_ID INTEGER NOT NULL,'
+                      '$_STREAM_TITLE TEXT NOT NULL,'
+                      '$_STREAM_START_TIMESTAMP INTEGER NOT NULL,'
+                      '$_STREAM_END_TIMESTAMP INTEGER DEFAULT NULL,'
+                      '$_STREAM_FLAGS INTEGER NOT NULL,'
+                      'FOREIGN KEY($_STREAM_PROFILE_ID) REFERENCES $_PROFILES_TABLE_NAME($_PROFILE_ID));');
                 }
               }));
       _loggerService.d("_getDatabase: Database created");
@@ -397,6 +453,29 @@ class PersistentStorageServiceImpl implements PersistentStorageService {
         queryResult.containsKey(_PROFILE_BROWSER_EXECUTABLE) ? queryResult[_PROFILE_BROWSER_EXECUTABLE] as String? : null,
         queryResult[_PROFILE_BOT_LANGUAGE] as String,
         id: queryResult.containsKey(_PROFILE_ID) ? queryResult[_PROFILE_ID] as int : null);
+  }
+
+  Map<String, dynamic> _convertDbStreamToMap(DbStream stream) {
+    return {
+      _STREAM_ID: stream.databaseId,
+      _STREAM_TWITCH_ID: stream.twitchId,
+      _STREAM_PROFILE_ID: _profileId,
+      _STREAM_TITLE: stream.title,
+      _STREAM_START_TIMESTAMP: stream.startTimestampUtc,
+      _STREAM_END_TIMESTAMP: stream.endTimestampUtc,
+      _STREAM_FLAGS: stream.flags
+    };
+  }
+
+  DbStream _convertMapToStream(Map<String, Object?> queryResult) {
+    return DbStream(
+        queryResult[_STREAM_TWITCH_ID] as String,
+        queryResult[_STREAM_TITLE] as String,
+        queryResult[_STREAM_START_TIMESTAMP] as int,
+        queryResult[_STREAM_END_TIMESTAMP] as int?,
+        databaseId: queryResult[_STREAM_ID] as int,
+        flags: queryResult[_STREAM_FLAGS] as int
+    );
   }
 
   Future<String?> _getSetting(String settingKey) async {
@@ -472,6 +551,15 @@ class PersistentStorageServiceImpl implements PersistentStorageService {
   static const String _COUNT_KEY = "key";
   static const String _COUNT_NUMBER = "number";
   static const String _COUNT_WORDS = "words";
+
+  static const String _STREAMS_TABLE_NAME = "streams";
+  static const String _STREAM_ID = "id";
+  static const String _STREAM_TWITCH_ID = "twitch_id";
+  static const String _STREAM_PROFILE_ID = "profile_id";
+  static const String _STREAM_TITLE = "title";
+  static const String _STREAM_START_TIMESTAMP = "start_timestamp_utc";
+  static const String _STREAM_END_TIMESTAMP = "end_timestamp_utc";
+  static const String _STREAM_FLAGS = "flags";
 
   static const int _DEFAULT_BROADCAST_DELAY_SECONDS = 60 * 5;
 }
