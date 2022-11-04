@@ -31,7 +31,7 @@ class CountdownServiceImpl implements CountdownService {
     if (groupString == null) {
       return 0;
     }
-    String hoursString = groupString.replaceFirst("h", "");
+    String hoursString = groupString.replaceFirst(timeIndicator, "");
     return int.tryParse(hoursString) ?? 0;
   }
 }

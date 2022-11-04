@@ -192,8 +192,10 @@ class TwitchChatCommandServiceImpl implements TwitchChatCommandService {
             int hours = durationSinceLiveStarted.inHours;
             Duration minutesDuration = durationSinceLiveStarted - Duration(hours: hours);
             int minutes = minutesDuration.inMinutes;
-            String messageString = answer = Localizer.getStringWithPlaceholders(_localizer.localizations.streamLiveSinceMessage, [
-              _sessionRepository.userDisplayName,
+            String hoursString = "$hours ${hours == 1 ? _localizer.localizations.hour : _localizer.localizations.hours}";
+            String minutesString = "$minutes ${hours == 1 ? _localizer.localizations.minute : _localizer.localizations.minutes}";
+            answer = Localizer.getStringWithPlaceholders(_localizer.localizations.streamLiveSinceMessage, [
+              _sessionRepository.userDisplayName, hoursString, minutesString
             ]);
           }
           break;

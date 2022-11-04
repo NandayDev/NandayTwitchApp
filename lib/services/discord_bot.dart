@@ -66,10 +66,10 @@ class NyxxDiscordBot implements DiscordBot {
         var streamScheduleResult = await _twitchApiService.getStreamSchedule();
         if (streamScheduleResult.isSuccessful) {
           StreamSchedule streamSchedule = streamScheduleResult.result!;
-          if (streamSchedule.elements.isNotEmpty) {
-            StreamScheduleElement nextStreamElement = streamSchedule.elements[0];
+          StreamScheduleElement? nextScheduleElement = streamSchedule.elements.firstWhereSafe((element) => element.startTime.isAfter(DateTime.now()));
+          if (nextScheduleElement != null) {
             await sendAnnouncement(Localizer.getStringWithPlaceholders(_localizer.localizations.channelOfflineDiscordMessageWithNextStream,
-                [_sessionRepository.userDisplayName, DateFormat.yMMMMEEEEd().format(nextStreamElement.startTime), DateFormat.Hm().format(nextStreamElement.startTime) ]));
+                [_sessionRepository.userDisplayName, DateFormat.yMMMMEEEEd().format(nextScheduleElement.startTime), DateFormat.Hm().format(nextScheduleElement.startTime) ]));
             info.dbStream?.discordEndMessageSent = true;
           }
         }

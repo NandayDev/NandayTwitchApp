@@ -311,8 +311,8 @@ class PersistentStorageServiceImpl implements PersistentStorageService {
   Future<bool> resetAllCounts() async {
     try {
       Database database = await _getDatabase();
-      int deleted = await database.delete(_COUNTS_TABLE_NAME);
-      _loggerService.d("resetAllCounts: deleted $deleted rows from $_COUNTS_TABLE_NAME table");
+      int updated = await database.update(_COUNTS_TABLE_NAME, { _COUNT_NUMBER: 0 }, conflictAlgorithm: ConflictAlgorithm.replace);
+      _loggerService.d("resetAllCounts: reset $updated rows from $_COUNTS_TABLE_NAME table");
       return true;
     } catch (e) {
       _loggerService.e("resetAllCounts: Error while resetting all counts: ${e.toString()}");

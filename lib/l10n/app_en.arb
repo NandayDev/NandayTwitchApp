@@ -28,7 +28,7 @@
   "countMessage": "{0} has said \"{1}\" {2} {3}",
   "timesSingular": "time",
   "timesPlural": "times",
-  "streamLiveSinceMessage": "{0} is live since {1}",
+  "streamLiveSinceMessage": "{0} has been live for {1} and {2}",
   "hour": "hour",
   "hours": "hours",
   "minute": "minute",

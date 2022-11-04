@@ -45,7 +45,7 @@ class SoundServiceImpl implements SoundService {
   }
 
   Future _playFile(_Sound sound) async {
-    String? fileName;
+    String fileName;
     switch (sound) {
       case _Sound.NEW_MESSAGE:
         fileName = 'new_chat_message.wav';
@@ -61,16 +61,14 @@ class SoundServiceImpl implements SoundService {
         break;
     }
 
-    if (fileName != null) {
-      _logger.d('Playing $fileName');
-      try {
-        await _player.stop();
-      } catch (e) {}
-      try {
-        await _player.play(AssetSource('sounds/$fileName'));
-      } catch (e) {
-        _logger.e('Couldn\'t play sound $fileName: $e');
-      }
+    _logger.d('Playing $fileName');
+    try {
+      await _player.stop();
+    } catch (e) {}
+    try {
+      await _player.play(AssetSource('sounds/$fileName'));
+    } catch (e) {
+      _logger.e('Couldn\'t play sound $fileName: $e');
     }
   }
 }
