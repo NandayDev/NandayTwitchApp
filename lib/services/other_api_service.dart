@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:http/http.dart';
+import 'package:nanday_twitch_app/models/other_api_responses.dart';
 import 'package:nanday_twitch_app/models/result.dart';
 import 'package:nanday_twitch_app/services/logger_service.dart';
 import 'package:nanday_twitch_app/services/twitch_keys_reader.dart';
@@ -9,7 +10,7 @@ abstract class OtherApiService {
   ///
   /// Fetches a random dad joke from the APIs and returns it if no error were encountered, otherwise null
   ///
-  Future<Result<String, String>> getRandomDadJoke();
+  Future<Result<DadJoke, String>> getRandomDadJoke();
 }
 
 class OtherApiServiceImpl implements OtherApiService {
@@ -19,7 +20,7 @@ class OtherApiServiceImpl implements OtherApiService {
   final LoggerService _loggerService;
 
   @override
-  Future<Result<String, String>> getRandomDadJoke() async {
+  Future<Result<DadJoke, String>> getRandomDadJoke() async {
     String? rapidApiKey = (await _keysReader.getTwitchKeys()).rapidAPIKey;
     if (rapidApiKey == null) {
       _loggerService.e("OtherApiServiceImpl - getRandomDadJoke() - Missing RapidAPI key from keys json");
@@ -35,8 +36,8 @@ class OtherApiServiceImpl implements OtherApiService {
 
     try {
       dynamic json = jsonDecode(response.body);
-      for (var entry in json['body']) {
-        return Result.successful(entry['punchline']);
+      for (dynamic entry in json['body']) {
+        return Result.successful(DadJoke(entry['setup'], entry['punchline']));
       }
       _loggerService.e("OtherApiServiceImpl - getRandomDadJoke() - Empty json['body']");
       return Result.withError("Empty response");

@@ -2,6 +2,7 @@ import 'dart:collection';
 
 import 'package:intl/intl.dart';
 import 'package:nanday_twitch_app/models/command.dart';
+import 'package:nanday_twitch_app/models/other_api_responses.dart';
 import 'package:nanday_twitch_app/models/result.dart';
 import 'package:nanday_twitch_app/services/countdown_service.dart';
 import 'package:nanday_twitch_app/services/event_service.dart';
@@ -92,7 +93,7 @@ class TwitchChatCommandServiceImpl implements TwitchChatCommandService {
           break;
 
         case 'quote':
-          String? keyword = match.group(2);
+          String? keyword = _sanitizeUserMessage(match.group(2));
           if (keyword == null) {
             // User's asking for a random quote //
             String? randomQuote = await _quoteService.getRandomQuote();
@@ -113,18 +114,22 @@ class TwitchChatCommandServiceImpl implements TwitchChatCommandService {
           break;
 
         case 'addquote':
-          String? keyword = match.group(2);
+          String? keyword = _sanitizeUserMessage(match.group(2));
           if (keyword == null) {
             answer = _localizer.localizations.invalidCommandSyntax;
             break;
           }
-          String content = chatMessage.message.substring(1 + match.group(1)!.length + 1 + keyword.length + 1, chatMessage.message.length);
-          if (await _storageService.saveQuote(keyword, content)) {
-            String message = _localizer.localizations.quoteCorrectlySaved;
-            message = Localizer.getStringWithPlaceholders(message, ["!quote $keyword"]);
-            answer = message;
-          } else {
-            answer = _localizer.localizations.quoteNotSaved;
+          try {
+            String? content = _sanitizeUserMessage(chatMessage.message.substring(1 + match.group(1)!.length + 1 + keyword.length + 1, chatMessage.message.length));
+            if (await _storageService.saveQuote(keyword, content!)) {
+              String message = _localizer.localizations.quoteCorrectlySaved;
+              message = Localizer.getStringWithPlaceholders(message, ["!quote $keyword"]);
+              answer = message;
+            } else {
+              answer = _localizer.localizations.quoteNotSaved;
+            }
+          } catch(e){
+
           }
 
           break;
@@ -212,8 +217,10 @@ class TwitchChatCommandServiceImpl implements TwitchChatCommandService {
           break;
 
         case 'dadjoke':
-          Result<String, String> apiResult = await _otherApiService.getRandomDadJoke();
-          answer = apiResult.result;
+          Result<DadJoke, String> apiResult = await _otherApiService.getRandomDadJoke();
+          if (apiResult.result != null) {
+            answer = apiResult.result!.setup + " " + apiResult.result!.punchline;
+          }
           break;
 
         case 'snd':
@@ -308,8 +315,12 @@ Or giveaways, prizes, etc
   }
 
   void _startCountdown(Duration countdownDuration) async {
-    _countdownService.awaitCountdown(countdownDuration);
+    await _countdownService.awaitCountdown(countdownDuration);
     String chatMessage = Localizer.getStringWithPlaceholders(_localizer.localizations.countdownTimerIsUp, [countdownDuration.toString()]);
     _twitchChatService.sendChatMessage(chatMessage);
+  }
+
+  String? _sanitizeUserMessage(String? message) {
+    return message?.replaceAll('/', '');
   }
 }
