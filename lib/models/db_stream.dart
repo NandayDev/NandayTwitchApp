@@ -28,4 +28,11 @@ class DbStream {
       flags &= ~(1 << bitIndex);
     }
   }
+
+  ///
+  /// Returns a new DbStream with given end time
+  ///
+  DbStream copyWithEndTimestampUtc(DateTime endTime) {
+    return DbStream(twitchId, title, startTimestampUtc, endTime.millisecondsSinceEpoch, databaseId: databaseId, flags: flags);
+  }
 }

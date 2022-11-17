@@ -73,7 +73,7 @@ class TwitchStreamPollerImpl implements TwitchStreamPoller {
                   .millisecondsSinceEpoch : null
           );
         } else {
-          dbStream = streamFromDb;
+          dbStream = value == false ? streamFromDb.copyWithEndTimestampUtc(DateTime.now()) : streamFromDb;
         }
       }
       _sessionRepository.streamLiveSince = streamLiveSince;
