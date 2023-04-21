@@ -4,7 +4,7 @@ A desktop application to handle my Twitch channel and automate some stuff.
 
 ## Compatibility
 
-Currently running on Windows only. Planning to add MacOS, and maybe Linux, later during the development.
+Currently running on Windows and MacOS.
 
 ## Features to add
 
